@@ -12,8 +12,7 @@ export default function Cart() {
       tagline: "Natural Titanium, 256GB",
       price: 1099,
       quantity: 1,
-      image:
-        "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-pro-natural-titanium-select?wid=800&hei=800&fmt=jpeg&qlt=90&.v=1692875994000",
+      image: "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-pro-natural-titanium-select?wid=800&hei=800&fmt=jpeg&qlt=90&.v=1692875994000",
     },
     {
       id: 2,
@@ -21,35 +20,25 @@ export default function Cart() {
       tagline: "with MagSafe Charging Case (USB-C)",
       price: 249,
       quantity: 1,
-      image:
-        "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/MQD83?wid=800&hei=800&fmt=jpeg&qlt=90&.v=1660803972361",
-    },
+      image: "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/MQD83?wid=800&hei=800&fmt=jpeg&qlt=90&.v=1660803972361",
+    }
   ]);
 
-  const total = cartItems.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0,
-  );
+  const total = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   const handleRemove = (id) => {
-    setCartItems(cartItems.filter((item) => item.id !== id));
+    setCartItems(cartItems.filter(item => item.id !== id));
   };
 
   const handleUpdateQuantity = (id, newQuantity) => {
     if (newQuantity < 1) return;
-    setCartItems(
-      cartItems.map((item) =>
-        item.id === id ? { ...item, quantity: newQuantity } : item,
-      ),
-    );
+    setCartItems(cartItems.map(item => item.id === id ? { ...item, quantity: newQuantity } : item));
   };
 
   return (
-    <main
-      className="w-full min-h-screen bg-[#ffffff] text-[#1d1d1f]"
-      style={{ fontFamily: SF_TEXT }}
-    >
+    <main className="w-full min-h-screen bg-[#ffffff] text-[#1d1d1f]" style={{ fontFamily: SF_TEXT }}>
       <div className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+
         <div className="text-center md:text-left mb-12 fade-in-up">
           <h1
             className="text-[34px] md:text-[40px] font-semibold leading-[1.1] tracking-[-0.374px] mb-6"
@@ -102,21 +91,15 @@ export default function Cart() {
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() =>
-                              handleUpdateQuantity(item.id, item.quantity - 1)
-                            }
+                            onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
                             className="w-8 h-8 flex items-center justify-center rounded-full bg-[#f5f5f7] hover:bg-[#e0e0e0] active:scale-95 transition-all text-[20px] text-[#1d1d1f]"
                             aria-label="Decrease quantity"
                           >
                             -
                           </button>
-                          <span className="text-[17px] font-semibold w-6 text-center">
-                            {item.quantity}
-                          </span>
+                          <span className="text-[17px] font-semibold w-6 text-center">{item.quantity}</span>
                           <button
-                            onClick={() =>
-                              handleUpdateQuantity(item.id, item.quantity + 1)
-                            }
+                            onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
                             className="w-8 h-8 flex items-center justify-center rounded-full bg-[#f5f5f7] hover:bg-[#e0e0e0] active:scale-95 transition-all text-[20px] text-[#1d1d1f]"
                             aria-label="Increase quantity"
                           >
@@ -136,43 +119,27 @@ export default function Cart() {
               ))}
             </div>
 
-            <div
-              className="mt-10 md:mt-16 ml-auto md:w-1/2 lg:w-5/12 animate-fade-in"
-              style={{ animationDelay: `${cartItems.length * 100}ms` }}
-            >
+            <div className="mt-10 md:mt-16 ml-auto md:w-1/2 lg:w-5/12 animate-fade-in" style={{ animationDelay: `${cartItems.length * 100}ms` }}>
               <div className="flex justify-between items-center py-4 border-b border-[#e0e0e0]">
                 <span className="text-[17px] font-normal">Subtotal</span>
-                <span className="text-[17px] font-semibold">
-                  ${total.toLocaleString()}
-                </span>
+                <span className="text-[17px] font-semibold">${total.toLocaleString()}</span>
               </div>
               <div className="flex justify-between items-center py-4 border-b border-[#e0e0e0]">
                 <span className="text-[17px] font-normal">Shipping</span>
                 <span className="text-[17px] font-semibold">FREE</span>
               </div>
               <div className="flex justify-between items-center py-6">
-                <span
-                  className="text-[24px] md:text-[28px] font-semibold leading-[1.14] tracking-[0.196px]"
-                  style={{ fontFamily: SF_DISPLAY }}
-                >
-                  Total
-                </span>
-                <span
-                  className="text-[24px] md:text-[28px] font-semibold leading-[1.14] tracking-[0.196px]"
-                  style={{ fontFamily: SF_DISPLAY }}
-                >
-                  ${total.toLocaleString()}
-                </span>
+                <span className="text-[24px] md:text-[28px] font-semibold leading-[1.14] tracking-[0.196px]" style={{ fontFamily: SF_DISPLAY }}>Total</span>
+                <span className="text-[24px] md:text-[28px] font-semibold leading-[1.14] tracking-[0.196px]" style={{ fontFamily: SF_DISPLAY }}>${total.toLocaleString()}</span>
               </div>
 
               <div className="mt-4 flex justify-end">
-                <Link
-                  to="/check_out"
-                  className="inline-block text-center w-full sm:w-auto bg-[#0066cc] text-[#ffffff] px-[28px] py-[14px] rounded-full text-[18px] font-normal hover:bg-[#0071e3] active:scale-95 transition-all"
+                <button
+                  className="w-full sm:w-auto bg-[#0066cc] text-[#ffffff] px-[28px] py-[14px] rounded-full text-[18px] font-normal hover:bg-[#0071e3] active:scale-95 transition-all"
                   aria-label="Check out your bag"
                 >
                   Check Out
-                </Link>
+                </button>
               </div>
             </div>
           </>
@@ -188,9 +155,8 @@ export default function Cart() {
         )}
       </div>
 
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @keyframes fadeInUp {
           from { opacity: 0; transform: translateY(16px); }
           to { opacity: 1; transform: translateY(0); }
@@ -202,9 +168,7 @@ export default function Cart() {
         .fade-in-up {
           animation: fadeInUp 0.5s ease-out forwards;
         }
-      `,
-        }}
-      />
+      `}} />
     </main>
   );
 }

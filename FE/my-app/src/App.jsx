@@ -8,6 +8,7 @@ import Register from "./auth/register";
 import Product_detail from "./pages/Product_detail";
 import Cart from "./pages/Cart";
 import Check_out from "./pages/Check_out";
+import User_profile from "./pages/User_profile";
 
 function App(){
     return(
@@ -22,6 +23,7 @@ function App(){
                     <Route path="product_detail" element={<Product_detail />} />
                     <Route path="cart" element={<Cart />} />
                     <Route path="check_out" element={<Check_out />} />
+                    <Route path="user_profile" element={<User_profile />} />
                 </Route>
             </Routes>
         </BrowserRouter>
