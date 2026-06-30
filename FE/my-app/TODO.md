@@ -1,6 +1,8 @@
-- [ ] Chỉnh UI item sản phẩm trên `src/pages/Home.jsx`:
-  - [ ] Bo tròn góc item + ảnh
-  - [ ] Hiệu ứng hover nhẹ (ảnh + content + ring Action Blue)
-  - [ ] Lăn chuột: mapping wheel dọc sang scroll ngang trong vùng sản phẩm
-  - [ ] Khi cuộn dọc vào từng section: animate nhẹ theo từng section
-- [ ] Test nhanh responsive (desktop/tablet/mobile)
+- [x] Header.jsx: xoá navItems tĩnh (category/brand)
+- [x] Header.jsx: sửa useEffect fetch GET http://localhost:3000/api/categories/
+- [x] Header.jsx: map dữ liệu BE -> cấu trúc menu động (category -> brand level-2)
+- [x] Header.jsx: render desktop dropdown + mobile accordion từ dữ liệu động
+- [x] Header.jsx: comment dễ hiểu cho từng dòng liên quan đến render/map
+- [ ] Test thủ công: chạy FE/BE, mở Header xem dropdown hiển thị đúng
+
+

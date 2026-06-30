@@ -1,0 +1,5 @@
+- [x] BE: Chỉnh `getAllProducts` để chỉ trả về sản phẩm thỏa **đồng thời** `category_id` và `brand_id`
+- [x] BE: Nếu sai 1 trong 2 điều kiện (thiếu/không hợp lệ) => trả `[]`
+- [x] Update `BE/src/controllers/productController.js`: validate query params đúng “AND”
+- [x] Update `BE/src/services/productService.js`: defense in depth validate số hợp lệ
+- [ ] Test endpoint `/products?category_id=...&brand_id=...` với các trường hợp: cả 2 hợp lệ / chỉ 1 hợp lệ / 1 giá trị không hợp lệ

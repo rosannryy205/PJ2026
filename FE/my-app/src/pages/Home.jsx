@@ -10,7 +10,7 @@ function ProductGridSection({
   toneBg,
   title,
   subtitle,
-  items,
+  items_product,
   renderCardTone = "light",
   align = "center",
   id,
@@ -136,7 +136,7 @@ function ProductGridSection({
                 "min-w-[100%]",
               ].join(" ")}
             >
-              {items.map((p) => (
+              {items_product.map((p) => (
                 <article
                   key={p.name}
                   className={[
@@ -156,7 +156,7 @@ function ProductGridSection({
                 >
                   <div className="w-full">
                     <img
-                      src={p.image}
+                      src={`../src/assets/${p.image}`}
                       alt={p.name}
                       className="w-full h-[240px] sm:h-[260px] lg:h-[280px] object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
                       style={{
@@ -226,7 +226,7 @@ function HighlightSection() {
       "Tối ưu lựa chọn cho bạn — tiết kiệm ngay, hỗ trợ nhanh, yên tâm sử dụng.",
     href: "/products?sale=true",
     cta: "Xem ưu đãi",
-    image: "/src/assets/banner2.jpg",
+    image: "../src/assets/banner2.jpg",
     alt: "Banner ưu đãi thương hiệu chính hãng",
   };
 
@@ -306,103 +306,82 @@ function HighlightSection() {
 }
 
 export default function Home() {
-  const newArrivals = [
-    {
-      name: "iPhone 17 Pro",
-      tagline: "Công nghệ mới – mạnh mẽ vượt trội.",
-      href: "/product_detail?item=iphone-17-pro",
-      cta: "Mua ngay",
-      image: "/src/assets/product.jpg",
-    },
-    {
-      name: "MacBook Air M4",
-      tagline: "Siêu mỏng – hiệu năng bứt phá.",
-      href: "/product_detail?item=macbook-air",
-      cta: "Mua ngay",
-      image: "/src/assets/product.jpg",
-    },
-    {
-      name: "iPad Pro",
-      tagline: "Mọi thao tác mượt mà, tinh gọn.",
-      href: "/product_detail?item=ipad-pro",
-      cta: "Khám phá",
-      image: "/src/assets/product.jpg",
-    },
-    {
-      name: "AirPods Pro 2",
-      tagline: "Âm thanh sống động, rõ ràng từng chi tiết.",
-      href: "/product_detail?item=airpods-pro",
-      cta: "Mua ngay",
-      image: "/src/assets/product.jpg",
-    },
-  ];
+  const [newArrivals, setNewArrivals] = React.useState([]);
+  const [featured, setFeatured] = React.useState([]);
+  const [popular, setPopular] = React.useState([]);
 
-  const featured = [
-    {
-      name: "Apple Watch Ultra 2",
-      tagline: "Bền bỉ – sẵn sàng cho mọi hành trình.",
-      href: "/product_detail?item=watch-ultra",
-      cta: "Xem ngay",
-      image: "/src/assets/product.jpg",
-    },
-    {
-      name: "MacBook Pro",
-      tagline: "Hiệu năng cao, thiết kế hoàn thiện.",
-      href: "/product_detail?item=macbook-pro",
-      cta: "Xem ngay",
-      image: "/src/assets/product.jpg",
-    },
-    {
-      name: "iPhone 17",
-      tagline: "Tinh tế trong từng đường nét, mạnh mẽ trong hiệu năng.",
-      href: "/product_detail?item=iphone-17",
-      cta: "Mua ngay",
-      image: "/src/assets/product.jpg",
-    },
-    {
-      name: "AirPods Max",
-      tagline: "Trải nghiệm âm thanh chuẩn studio.",
-      href: "/product_detail?item=airpods-max",
-      cta: "Khám phá",
-      image: "/src/assets/product.jpg",
-    },
-  ];
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState(null);
 
-  const popular = [
-    {
-      name: "iPhone 16",
-      tagline: "Lựa chọn cân bằng cho hiệu năng hằng ngày.",
-      href: "/product_detail?item=iphone-16",
-      cta: "Mua ngay",
-      image: "/src/assets/product.jpg",
-    },
-    {
-      name: "iPad Air",
-      tagline: "Gọn nhẹ – đa dụng cho học tập & làm việc.",
-      href: "/product_detail?item=ipad-air",
-      cta: "Khám phá",
-      image: "/src/assets/product.jpg",
-    },
-    {
-      name: "Apple Watch Series 10",
-      tagline: "Sức khỏe thông minh, theo dõi chủ động.",
-      href: "/product_detail?item=watch-s10",
-      cta: "Xem ngay",
-      image: "/src/assets/product.jpg",
-    },
-    {
-      name: "AirPods 4",
-      tagline: "Thêm tự do, bớt lo âu – âm thanh thoải mái.",
-      href: "/product_detail?item=airpods-4",
-      cta: "Mua ngay",
-      image: "/src/assets/product.jpg",
-    },
-  ];
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const API_BASE_URL = "http://localhost:3000/api"; // Cập nhật nếu backend chạy ở cổng khác
+
+        const res = await fetch(`${API_BASE_URL}/products/`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const json = await res.json();
+        console.log("[Home] /api/products response:", json);
+        const products = json?.data ?? [];
+
+        // Map dữ liệu BE -> format FE render
+        const mapped = products.map((p) => {
+          const firstImage = (p.images && p.images[0]) || null;
+
+          // BE model: product_images.img_url
+          const image =
+            firstImage?.img_url ||
+            firstImage?.image_url ||
+            firstImage?.url ||
+            firstImage?.path ||
+            "";
+
+          // BE trả về Product instance Sequelize, id thường là `id` (khóa chính) hoặc `_id`.
+          const productId = p.id ?? p._id;
+
+          // BE model: products.description, products.slug
+          const tagline = p.description || p.slug || "";
+
+          return {
+            id: productId,
+            name: p.name,
+            tagline,
+            image,
+            href: productId ? `/product_detail?id=${productId}` : "/product_detail",
+            cta: "Xem chi tiết",
+          };
+        });
+
+        setNewArrivals(mapped);
+        setFeatured(mapped);
+        setPopular(mapped);
+      } catch (err) {
+        setError("Error fetching product data.");
+        setNewArrivals([]);
+        setFeatured([]);
+        setPopular([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
 
   return (
     <main className="w-full">
       {/* Keep existing banner */}
       <Banner />
+
+      {/* Error banner (debug) */}
+      {error ? (
+        <div className="w-full bg-red-50 border border-red-200 text-red-700 px-6 py-4 my-4">
+          {error}
+        </div>
+      ) : null}
 
       {/* 1) Sản phẩm mới ra mắt */}
       <ProductGridSection
@@ -411,7 +390,7 @@ export default function Home() {
         renderCardTone="light"
         title="Sản phẩm mới ra mắt"
         subtitle="Những lựa chọn vừa cập nhật — thiết kế tinh gọn, hiệu năng sẵn sàng."
-        items={newArrivals}
+        items_product={newArrivals}
       />
 
       {/* 2) Sản phẩm nổi bật */}
@@ -421,7 +400,7 @@ export default function Home() {
         renderCardTone="parchment"
         title="Sản phẩm nổi bật"
         subtitle="Được chọn lọc cho trải nghiệm mượt, hình ảnh rõ nét, thao tác nhanh."
-        items={featured}
+        items_product={featured}
       />
 
       {/* 3) Sản phẩm phổ biến */}
@@ -431,7 +410,7 @@ export default function Home() {
         renderCardTone="parchment"
         title="Sản phẩm phổ biến"
         subtitle="Sản phẩm được nhiều người chọn — chất lượng ổn định, đáng tin cậy."
-        items={popular}
+        items_product={popular}
       />
 
       {/* 4) Section tạo điểm nhấn */}

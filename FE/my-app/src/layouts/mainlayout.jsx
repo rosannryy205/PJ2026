@@ -7,7 +7,7 @@ export default function MainLayout() {
     <>
       <Header />
 
-      <div className="flex flex-1">
+      <div>
         <main style={{ minHeight: "80vh" }}>
           <Outlet />
         </main>

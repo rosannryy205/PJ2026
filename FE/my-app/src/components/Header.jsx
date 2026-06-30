@@ -1,75 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 
-/* ─── NAV DATA with Level-2 submenus ─── */
-const navItems = [
-  {
-    label: "Mac",
-    href: "/products?cat=mac",
-    children: [
-      { label: "MacBook Air", href: "/products?item=macbook-air" },
-      { label: "MacBook Pro", href: "/products?item=macbook-pro" },
-      { label: "iMac", href: "/products?item=imac" },
-      { label: "Mac Mini", href: "/products?item=mac-mini" },
-      { label: "Mac Studio", href: "/products?item=mac-studio" },
-      { label: "Mac Pro", href: "/products?item=mac-pro" },
-      { label: "So sánh", href: "/products?compare=mac" },
-    ],
-  },
-  {
-    label: "iPhone",
-    href: "/products?cat=iphone",
-    children: [
-      { label: "iPhone 17 Pro", href: "/products?item=iphone-17-pro" },
-      { label: "iPhone 17", href: "/products?item=iphone-17" },
-      { label: "iPhone 16", href: "/products?item=iphone-16" },
-      { label: "iPhone SE", href: "/products?item=iphone-se" },
-      { label: "So sánh", href: "/products?compare=iphone" },
-    ],
-  },
-  {
-    label: "iPad",
-    href: "/products?cat=ipad",
-    children: [
-      { label: "iPad Pro", href: "/products?item=ipad-pro" },
-      { label: "iPad Air", href: "/products?item=ipad-air" },
-      { label: "iPad", href: "/products?item=ipad" },
-      { label: "iPad Mini", href: "/products?item=ipad-mini" },
-      { label: "So sánh", href: "/products?compare=ipad" },
-    ],
-  },
-  {
-    label: "Watch",
-    href: "/products?cat=watch",
-    children: [
-      { label: "Apple Watch Ultra 2", href: "/products?item=watch-ultra" },
-      { label: "Apple Watch Series 10", href: "/products?item=watch-s10" },
-      { label: "Apple Watch SE", href: "/products?item=watch-se" },
-      { label: "Dây đeo", href: "/products?item=watch-bands" },
-    ],
-  },
-  {
-    label: "AirPods",
-    href: "/products?cat=airpods",
-    children: [
-      { label: "AirPods Pro 2", href: "/products?item=airpods-pro" },
-      { label: "AirPods 4", href: "/products?item=airpods-4" },
-      { label: "AirPods Max", href: "/products?item=airpods-max" },
-      { label: "So sánh", href: "/products?compare=airpods" },
-    ],
-  },
-  {
-    label: "Phụ kiện",
-    href: "/products?cat=accessories",
-    children: [
-      { label: "Ốp lưng", href: "/products?item=cases" },
-      { label: "Sạc & Cáp", href: "/products?item=chargers" },
-      { label: "Bàn phím & Chuột", href: "/products?item=keyboards" },
-      { label: "Màn hình", href: "/products?item=displays" },
-    ],
-  },
-  { label: "Khuyến mãi", href: "/products?sale=true" },
-];
+// Menu dữ liệu (category -> brand) sẽ được render động từ backend.
+// Vì yêu cầu "xóa bỏ hết dữ liệu tĩnh ở FE" nên không còn hardcode navItems nữa.
+
 
 /* ─── SVG Icons ─── */
 function SearchIcon({ className = "" }) {
@@ -235,8 +169,7 @@ function SearchOverlay({ open, onClose }) {
               placeholder="Tìm kiếm sản phẩm..."
               className="w-full bg-transparent text-white text-[17px] font-light tracking-[-0.374px] leading-[1.47] placeholder:text-[#86868b] outline-none border-none"
               style={{
-                fontFamily:
-                  "SF Pro Text, system-ui, -apple-system, sans-serif",
+                fontFamily: "SF Pro Text, system-ui, -apple-system, sans-serif",
               }}
             />
             <button
@@ -253,8 +186,7 @@ function SearchOverlay({ open, onClose }) {
             <p
               className="text-[#86868b] text-[12px] font-normal tracking-[-0.12px] mb-3"
               style={{
-                fontFamily:
-                  "SF Pro Text, system-ui, -apple-system, sans-serif",
+                fontFamily: "SF Pro Text, system-ui, -apple-system, sans-serif",
               }}
             >
               Tìm kiếm nhanh
@@ -291,25 +223,20 @@ function SearchOverlay({ open, onClose }) {
 /* ─── DESKTOP DROPDOWN (Level 2) ─── */
 function DesktopDropdown({ children, align = "center" }) {
   const alignClass =
-    align === "center"
-      ? "left-1/2 -translate-x-1/2"
-      : "left-0";
+    align === "center" ? "left-1/2 -translate-x-1/2" : "left-0";
 
   return (
     <div
       className={`absolute top-full pt-2 ${alignClass} opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out z-50`}
     >
-      <div
-        className="bg-[#1d1d1f] rounded-[12px] py-2 min-w-[200px] shadow-[0_8px_32px_rgba(0,0,0,0.35)]"
-      >
+      <div className="bg-[#1d1d1f] rounded-[12px] py-2 min-w-[200px] shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
         {children.map((child) => (
           <Link
             key={child.href}
             to={child.href}
             className="block px-5 py-[9px] text-[12px] font-normal tracking-[-0.12px] text-[#d2d2d7] hover:text-white hover:bg-[#2a2a2c] transition-colors no-underline whitespace-nowrap"
             style={{
-              fontFamily:
-                "SF Pro Text, system-ui, -apple-system, sans-serif",
+              fontFamily: "SF Pro Text, system-ui, -apple-system, sans-serif",
             }}
           >
             {child.label}
@@ -369,8 +296,7 @@ function MobileAccordion({ item, onNavigate }) {
               onClick={onNavigate}
               className="block py-[8px] text-[14px] font-normal tracking-[-0.224px] text-[#86868b] hover:text-white transition-colors no-underline"
               style={{
-                fontFamily:
-                  "SF Pro Text, system-ui, -apple-system, sans-serif",
+                fontFamily: "SF Pro Text, system-ui, -apple-system, sans-serif",
               }}
             >
               {child.label}
@@ -388,6 +314,35 @@ export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
+  const [categories, setCategories] = React.useState([]); // Dữ liệu category (kèm brands) từ BE
+  const [loadingCategories, setLoadingCategories] = React.useState(true); // Loading menu
+  const [errorCategories, setErrorCategories] = React.useState(null); // Lỗi khi fetch menu
+
+  React.useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoadingCategories(true); // Bật trạng thái loading trước khi fetch
+
+        const API_BASE_URL = "http://localhost:3000/api"; // Base URL backend
+        const res = await fetch(`${API_BASE_URL}/categories/`); // Gọi API lấy categories + brands
+        if (!res.ok) throw new Error(`HTTP ${res.status}`); // Nếu HTTP lỗi thì throw để vào catch
+
+        const json = await res.json(); // Parse JSON phản hồi
+        const data = json?.data ?? []; // Lấy mảng categories, fallback [] nếu BE trả thiếu
+
+        setCategories(data); // Lưu categories vào state để render menu động
+      } catch (err) {
+        setErrorCategories(err?.message || "Không lấy được danh mục từ backend"); // Lưu thông tin lỗi
+        setCategories([]); // Reset menu nếu lỗi
+      } finally {
+        setLoadingCategories(false); // Tắt loading dù thành công hay thất bại
+      }
+    };
+
+    fetchCategories(); // Gọi fetch 1 lần khi component mount
+  }, []);
+
+
   /* Track scroll for subtle shadow on sticky nav */
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -398,7 +353,9 @@ export default function Header() {
   /* Lock body scroll when mobile menu is open */
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [mobileOpen]);
 
   const closeMobile = () => setMobileOpen(false);
@@ -413,11 +370,9 @@ export default function Header() {
         }}
       >
         {/* ─── TOP PROMO BAR ─── */}
-        <div
-          className="bg-[#0066cc] text-white text-center py-[6px] text-[12px] font-normal tracking-[-0.12px] leading-none hidden sm:block"
-        >
-          Miễn phí giao hàng cho đơn từ 500.000₫&nbsp;&nbsp;|&nbsp;&nbsp;Trả
-          góp 0% lãi suất
+        <div className="bg-[#0066cc] text-white text-center py-[6px] text-[12px] font-normal tracking-[-0.12px] leading-none hidden sm:block">
+          Miễn phí giao hàng cho đơn từ 500.000₫&nbsp;&nbsp;|&nbsp;&nbsp;Trả góp
+          0% lãi suất
         </div>
 
         {/* ═══════════════════════════════════════════
@@ -448,31 +403,61 @@ export default function Header() {
                   />
                 </svg>
               </span>
-              <span
-                className="text-[12px] font-semibold tracking-[0.5px] uppercase leading-none hidden sm:inline"
-              >
+              <span className="text-[12px] font-semibold tracking-[0.5px] uppercase leading-none hidden sm:inline">
                 TechStore
               </span>
             </Link>
 
             {/* ── Desktop Nav Links ── */}
             <div className="hidden lg:flex items-center gap-[20px]">
-              {navItems.map((item) => (
-                <div key={item.label} className="relative group">
-                  <Link
-                    to={item.href}
-                    className="text-[12px] font-normal tracking-[-0.12px] leading-none text-[#d2d2d7] hover:text-white transition-colors no-underline py-[14px] inline-block"
+              {loadingCategories ? (
+                <span
+                  className="text-[12px] font-normal tracking-[-0.12px] leading-none text-[#86868b]"
+                  style={{
+                    fontFamily:
+                      "SF Pro Text, system-ui, -apple-system, sans-serif",
+                  }}
+                >
+                  Đang tải danh mục...
+                </span>
+              ) : (
+                // Duyệt categories từ backend để render menu động
+                categories.map((cate) => (
+                  <div
+                    key={cate.id}
+                    className="relative group"
+                    aria-label={`Danh mục: ${cate.name}`}
                   >
-                    {item.label}
-                  </Link>
+                    {/* Link cấp 1: nhấn vào category sẽ lọc theo cat=category.slug */}
+                    <Link
+                      to={`/products?cate=${encodeURIComponent(cate.slug)}`}
+                      className="text-[12px] font-normal tracking-[-0.12px] leading-none text-[#d2d2d7] hover:text-white transition-colors no-underline py-[14px] inline-block"
+                    >
+                      {cate.name}
+                    </Link>
 
-                  {/* Level-2 dropdown */}
-                  {item.children && (
-                    <DesktopDropdown children={item.children} />
-                  )}
-                </div>
-              ))}
+                    {/* Level-2 dropdown: hiển thị các brand thuộc category */}
+                    {Array.isArray(cate.category_brands) &&
+                      cate.category_brands.length > 0 && (
+                        <DesktopDropdown
+                          // Tạo danh sách children (label/href) từ category_brands
+                          children={cate.category_brands.map((cb) => {
+                            const brand = cb.brand; // Brand model nằm lồng trong category_brands
+
+                            return {
+                              label: brand?.name || "(Không rõ brand)", // Tên brand để hiển thị
+                              href: `/products?brand=${encodeURIComponent(
+                                brand?.slug
+                              )}&cate=${encodeURIComponent(cate.slug)}`, // Link lọc theo brand + cat
+                            };
+                          })}
+                        />
+                      )}
+                  </div>
+                ))
+              )}
             </div>
+
 
             {/* ── Right Actions ── */}
             <div className="flex items-center gap-[12px]">
@@ -642,13 +627,37 @@ export default function Header() {
 
           {/* Nav items with accordion */}
           <div className="px-5 py-2">
-            {navItems.map((item) => (
-              <MobileAccordion
-                key={item.label}
-                item={item}
-                onNavigate={closeMobile}
-              />
-            ))}
+            {loadingCategories ? (
+              <div className="py-[10px] text-white/70">Đang tải danh mục...</div>
+            ) : (
+              // Duyệt categories từ backend để render accordion menu động
+              categories.map((cat) => (
+                <MobileAccordion
+                  key={cat.id}
+                  onNavigate={closeMobile}
+                  // Tạo object item theo format MobileAccordion đang dùng (label/href/children)
+                  item={{
+                    label: cat.name, // Tên category hiển thị
+                    href: `/products?cat=${encodeURIComponent(cat.slug)}`, // Link lọc theo category
+                    children:
+                      // Tạo children từ các brand thuộc category để accordion mở ra
+                      Array.isArray(cat.category_brands)
+                        ? cat.category_brands.map((cb) => {
+                            const brand = cb.brand; // Brand nằm trong cb.brand
+
+                            return {
+                              label: brand?.name || "(Không rõ brand)", // Text hiển thị
+                              href: `/products?brand=${encodeURIComponent(
+                                brand?.slug
+                              )}&cat=${encodeURIComponent(cat.slug)}` , // Link lọc theo brand + cat
+                            };
+                          })
+                        : undefined,
+                  }}
+                />
+              ))
+            )}
+
           </div>
 
           {/* CTA button */}
@@ -658,8 +667,7 @@ export default function Header() {
               onClick={closeMobile}
               className="flex items-center justify-center w-full rounded-full bg-[#0066cc] text-white text-[17px] font-normal tracking-[-0.374px] py-[11px] hover:bg-[#0071e3] active:scale-95 transition-all no-underline"
               style={{
-                fontFamily:
-                  "SF Pro Text, system-ui, -apple-system, sans-serif",
+                fontFamily: "SF Pro Text, system-ui, -apple-system, sans-serif",
               }}
             >
               Mua ngay
@@ -691,10 +699,7 @@ export default function Header() {
       </header>
 
       {/* Search Overlay */}
-      <SearchOverlay
-        open={searchOpen}
-        onClose={() => setSearchOpen(false)}
-      />
+      <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 }
