@@ -314,49 +314,62 @@ export default function Home() {
   const [error, setError] = React.useState(null);
 
   React.useEffect(() => {
+    const API_BASE_URL = "http://localhost:3000/api"; // Cập nhật nếu backend chạy ở cổng khác
+
+    const mapProductsForHome = (products) => {
+      return (products ?? []).map((p) => {
+        const firstImage = (p.images && p.images[0]) || null;
+
+        // BE model: ProductImage fields (img_url/image_url/url/path)
+        const image =
+          firstImage?.img_url ||
+          firstImage?.image_url ||
+          firstImage?.url ||
+          firstImage?.path ||
+          "";
+
+        const productId = p.id ?? p._id;
+        const tagline = p.description || p.slug || "";
+
+        return {
+          id: productId,
+          name: p.name,
+          tagline,
+          image,
+          href: productId ? `/product_detail?id=${productId}` : "/product_detail",
+          cta: "Xem chi tiết",
+        };
+      });
+    };
+
     const fetchData = async () => {
       try {
         setLoading(true);
-        const API_BASE_URL = "http://localhost:3000/api"; // Cập nhật nếu backend chạy ở cổng khác
+        setError(null);
 
-        const res = await fetch(`${API_BASE_URL}/products/`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const [resNewArrivals, resFeatures, resPopular] = await Promise.all([
+          fetch(`${API_BASE_URL}/products/newarrival`),
+          fetch(`${API_BASE_URL}/products/features`),
+          fetch(`${API_BASE_URL}/products/popular`),
+        ]);
 
-        const json = await res.json();
-        console.log("[Home] /api/products response:", json);
-        const products = json?.data ?? [];
+        if (!resNewArrivals.ok) throw new Error(`HTTP newarrival ${resNewArrivals.status}`);
+        if (!resFeatures.ok) throw new Error(`HTTP features ${resFeatures.status}`);
+        if (!resPopular.ok) throw new Error(`HTTP popular ${resPopular.status}`);
 
-        // Map dữ liệu BE -> format FE render
-        const mapped = products.map((p) => {
-          const firstImage = (p.images && p.images[0]) || null;
+        const [jsonNewArrivals, jsonFeatures, jsonPopular] = await Promise.all([
+          resNewArrivals.json(),
+          resFeatures.json(),
+          resPopular.json(),
+        ]);
 
-          // BE model: product_images.img_url
-          const image =
-            firstImage?.img_url ||
-            firstImage?.image_url ||
-            firstImage?.url ||
-            firstImage?.path ||
-            "";
+        const newArrivalProducts = jsonNewArrivals?.data ?? [];
+        const featuresProducts = jsonFeatures?.data ?? [];
+        const popularProducts = jsonPopular?.data ?? [];
 
-          // BE trả về Product instance Sequelize, id thường là `id` (khóa chính) hoặc `_id`.
-          const productId = p.id ?? p._id;
-
-          // BE model: products.description, products.slug
-          const tagline = p.description || p.slug || "";
-
-          return {
-            id: productId,
-            name: p.name,
-            tagline,
-            image,
-            href: productId ? `/product_detail?id=${productId}` : "/product_detail",
-            cta: "Xem chi tiết",
-          };
-        });
-
-        setNewArrivals(mapped);
-        setFeatured(mapped);
-        setPopular(mapped);
+        setNewArrivals(mapProductsForHome(newArrivalProducts));
+        setFeatured(mapProductsForHome(featuresProducts));
+        setPopular(mapProductsForHome(popularProducts));
       } catch (err) {
         setError("Error fetching product data.");
         setNewArrivals([]);
@@ -369,6 +382,7 @@ export default function Home() {
 
     fetchData();
   }, []);
+
 
 
   return (

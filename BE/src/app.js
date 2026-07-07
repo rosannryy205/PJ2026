@@ -4,10 +4,12 @@ const app = express();
 const userRoutes = require("./routers/userRouter"); //gọi các route từ userRouter.js
 const productRoutes = require("./routers/productRouter"); //gọi các route từ productRouter.js
 const categoryRoutes = require("./routers/categoryRouter"); //gọi các route từ categoryRouter.js
+const registerRoutes = require("./routers/registerRouter"); //gọi các route từ registerRouter.js
 
 // CORS: cho phép FE chạy tại http://localhost:5173 truy cập API
 app.use(
   cors({
+
     origin: [
       "http://localhost:5175",
       "http://localhost:5173",
@@ -29,6 +31,9 @@ app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
 // Định nghĩa các route cho danh mục
 app.use("/api/categories", categoryRoutes);
+// Định nghĩa route cho đăng ký người dùng
+app.use("/api/register", registerRoutes);
+
 
 // Route mặc định để kiểm tra API
 app.get("/", (req, res) => {

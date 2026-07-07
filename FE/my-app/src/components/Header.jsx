@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import { useAuthModal } from "../contexts/AuthModalContext";
 
 // Menu dữ liệu (category -> brand) sẽ được render động từ backend.
 // Vì yêu cầu "xóa bỏ hết dữ liệu tĩnh ở FE" nên không còn hardcode navItems nữa.
@@ -313,6 +314,7 @@ export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { openLogin } = useAuthModal();
 
   const [categories, setCategories] = React.useState([]); // Dữ liệu category (kèm brands) từ BE
   const [loadingCategories, setLoadingCategories] = React.useState(true); // Loading menu
@@ -484,15 +486,15 @@ export default function Header() {
               </Link>
 
               {/* User — desktop only */}
-              <Link
-                to="/login"
-                className="hidden sm:flex items-center gap-1 text-[#d2d2d7] hover:text-white transition-colors no-underline"
+              <button
+                onClick={openLogin}
+                className="hidden sm:flex items-center gap-1 text-[#d2d2d7] hover:text-white transition-colors bg-transparent border-none outline-none cursor-pointer"
               >
                 <UserIcon />
                 <span className="text-[12px] font-normal tracking-[-0.12px] leading-none">
                   Đăng nhập
                 </span>
-              </Link>
+              </button>
 
               {/* Hamburger — mobile / tablet */}
               <button
@@ -607,10 +609,9 @@ export default function Header() {
 
           {/* Login link - mobile */}
           <div className="px-5 py-3 border-b border-[#333336]">
-            <Link
-              to="/login"
-              onClick={closeMobile}
-              className="flex items-center gap-2 text-white/80 hover:text-white transition-colors no-underline"
+            <button
+              onClick={() => { closeMobile(); openLogin(); }}
+              className="flex items-center gap-2 text-white/80 hover:text-white transition-colors bg-transparent border-none outline-none cursor-pointer w-full"
             >
               <UserIcon className="text-[#86868b]" />
               <span
@@ -622,7 +623,7 @@ export default function Header() {
               >
                 Đăng nhập / Đăng ký
               </span>
-            </Link>
+            </button>
           </div>
 
           {/* Nav items with accordion */}

@@ -4,7 +4,7 @@
   justify-content: center;
   min-height: 100vh;
   /* Stunning e-commerce / premium retail background */
-  background: url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop') no-repeat center center;
+  background: url('../assets/bg_login.jpg') no-repeat center center;
   background-size: cover;
   position: relative;
   font-family: "SF Pro Text", system-ui, -apple-system, sans-serif;

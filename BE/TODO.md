@@ -1,9 +1,6 @@
-# TODO - Debug BE (DB + Express routes)
+# TODO
 
-- [ ] Thu thập thông tin: đọc các file liên quan (server/app/routes/controllers/models/config/db)
-- [ ] Xác định lỗi crash hiện tại (TypeError handler not function) và vị trí nguyên nhân
-- [ ] Liệt kê các lỗi có thể ảnh hưởng kết nối DB (dotenv/env vars, sequelize dialect, quyền sync/alter)
-- [ ] Liệt kê các lỗi truy vấn Sequelize (include/alias/association)
-- [ ] (Không tự fix) Đề xuất cách sửa cụ thể cho từng lỗi
-- [ ] (Sau khi user sửa) chạy lại `node server.js` và xác nhận lỗi tiếp theo (nếu còn)
+## Register API
+- [ ] Implement `registerUser` in `BE/src/services/registerService.js` (input: email, password; validate; hash password; create user; handle duplicate email).
+- [ ] Wire/return values for controller usage (if controller exists).
 
