@@ -5,10 +5,12 @@ const userRoutes = require("./routers/userRouter"); //gọi các route từ user
 const productRoutes = require("./routers/productRouter"); //gọi các route từ productRouter.js
 const categoryRoutes = require("./routers/categoryRouter"); //gọi các route từ categoryRouter.js
 const registerRoutes = require("./routers/registerRouter"); //gọi các route từ registerRouter.js
+const authRoutes = require("./routers/authRouter"); // auth module
 
 // CORS: cho phép FE chạy tại http://localhost:5173 truy cập API
 app.use(
   cors({
+
 
     origin: [
       "http://localhost:5175",
@@ -25,6 +27,11 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Parse cookie để đọc JWT httpOnly (req.cookies)
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
+
+
 // Định nghĩa các route cho người dùng
 app.use("/api/users", userRoutes);
 // Định nghĩa các route cho sản phẩm
@@ -34,11 +41,15 @@ app.use("/api/categories", categoryRoutes);
 // Định nghĩa route cho đăng ký người dùng
 app.use("/api/register", registerRoutes);
 
+// Định nghĩa route auth (login/me/logout)
+app.use("/api/auth", authRoutes);
+
 
 // Route mặc định để kiểm tra API
 app.get("/", (req, res) => {
     res.send("Welcome to the User Management API");
 });
+
 
 // Error handler tập trung
 app.use(require("./middleware/errorHandler"));

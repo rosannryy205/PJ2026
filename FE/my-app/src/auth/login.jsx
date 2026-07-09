@@ -1,21 +1,63 @@
 import { useState } from "react";
 import { useAuthModal } from "../contexts/AuthModalContext";
+import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import InlineAlert from "../components/InlineAlert";
 
 const SF_DISPLAY = "SF Pro Display, system-ui, -apple-system, sans-serif";
 const SF_TEXT = "SF Pro Text, system-ui, -apple-system, sans-serif";
 
+const API_BASE_URL = "http://localhost:3000";
+
 /**
  * Login form — rendered inside AuthModal.
- * Design tokens from DESIGN.md (Apple design language).
  */
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { openRegister, openForgetPassword } = useAuthModal();
+  const [alert, setAlert] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const navigate = useNavigate();
+  const { openRegister, openForgetPassword, closeModal } = useAuthModal();
+  const { refreshMe } = useAuth();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Login attempt:", { email, password });
+
+    setAlert(null);
+    setSubmitting(true);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+        credentials: "include", // gửi cookie httpOnly
+      });
+
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(payload?.message || "Login failed");
+      }
+
+      // 1) đóng modal login
+      closeModal();
+
+      // 2) refresh user từ /me để cập nhật Header + user_profile
+      await refreshMe();
+
+      // 3) điều hướng về Home
+      navigate("/");
+    } catch (err) {
+      setAlert({
+        variant: "error",
+        title: "Login failed",
+        message: err?.message || "Please try again.",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -33,6 +75,18 @@ export default function Login() {
       >
         Đăng nhập để khám phá bộ sưu tập và ưu đãi dành riêng cho bạn.
       </p>
+
+      {/* Alert */}
+      {alert ? (
+        <div className="mt-6">
+          <InlineAlert
+            variant={alert.variant}
+            title={alert.title}
+            message={alert.message}
+            onDismiss={() => setAlert(null)}
+          />
+        </div>
+      ) : null}
 
       {/* Form */}
       <form className="mt-8 flex flex-col gap-5" onSubmit={handleSubmit}>
@@ -93,10 +147,11 @@ export default function Login() {
         {/* Submit */}
         <button
           type="submit"
-          className="mt-2 w-full h-[44px] rounded-full bg-[#0066cc] text-white text-[17px] font-normal tracking-[-0.374px] leading-[1.47] border-none cursor-pointer hover:bg-[#0071e3] active:scale-[0.95] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2"
+          disabled={submitting}
+          className="mt-2 w-full h-[44px] rounded-full bg-[#0066cc] text-white text-[17px] font-normal tracking-[-0.374px] leading-[1.47] border-none cursor-pointer hover:bg-[#0071e3] active:scale-[0.95] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
           style={{ fontFamily: SF_TEXT }}
         >
-          Login
+          {submitting ? "Logging in…" : "Login"}
         </button>
       </form>
 
@@ -107,7 +162,7 @@ export default function Login() {
           className="text-[12px] text-[#7a7a7a] tracking-[-0.12px]"
           style={{ fontFamily: SF_TEXT }}
         >
-         or
+          or
         </span>
         <div className="flex-1 h-px bg-[#e0e0e0]" />
       </div>

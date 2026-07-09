@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthModal } from "../contexts/AuthModalContext";
+import { useAuth } from "../contexts/AuthContext";
+
 
 // Menu dữ liệu (category -> brand) sẽ được render động từ backend.
 // Vì yêu cầu "xóa bỏ hết dữ liệu tĩnh ở FE" nên không còn hardcode navItems nữa.
@@ -315,6 +317,7 @@ export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { openLogin } = useAuthModal();
+  const { user, isAuthenticated, logout } = useAuth();
 
   const [categories, setCategories] = React.useState([]); // Dữ liệu category (kèm brands) từ BE
   const [loadingCategories, setLoadingCategories] = React.useState(true); // Loading menu
@@ -486,15 +489,28 @@ export default function Header() {
               </Link>
 
               {/* User — desktop only */}
-              <button
-                onClick={openLogin}
-                className="hidden sm:flex items-center gap-1 text-[#d2d2d7] hover:text-white transition-colors bg-transparent border-none outline-none cursor-pointer"
-              >
-                <UserIcon />
-                <span className="text-[12px] font-normal tracking-[-0.12px] leading-none">
-                  Đăng nhập
-                </span>
-              </button>
+              {isAuthenticated ? (
+                <Link
+                  to="/user_profile"
+                  className="hidden sm:flex items-center gap-2 text-[#d2d2d7] hover:text-white transition-colors bg-transparent border-none outline-none no-underline"
+                  aria-label="User profile"
+                >
+                  <UserIcon />
+                  <span className="text-[12px] font-normal tracking-[-0.12px] leading-none">
+                    {user?.name ? user.name.split(" ")[0] : "User"}
+                  </span>
+                </Link>
+              ) : (
+                <button
+                  onClick={openLogin}
+                  className="hidden sm:flex items-center gap-1 text-[#d2d2d7] hover:text-white transition-colors bg-transparent border-none outline-none cursor-pointer"
+                >
+                  <UserIcon />
+                  <span className="text-[12px] font-normal tracking-[-0.12px] leading-none">
+                    Đăng nhập
+                  </span>
+                </button>
+              )}
 
               {/* Hamburger — mobile / tablet */}
               <button
@@ -609,21 +625,55 @@ export default function Header() {
 
           {/* Login link - mobile */}
           <div className="px-5 py-3 border-b border-[#333336]">
-            <button
-              onClick={() => { closeMobile(); openLogin(); }}
-              className="flex items-center gap-2 text-white/80 hover:text-white transition-colors bg-transparent border-none outline-none cursor-pointer w-full"
-            >
-              <UserIcon className="text-[#86868b]" />
-              <span
-                className="text-[14px] font-normal tracking-[-0.224px]"
-                style={{
-                  fontFamily:
-                    "SF Pro Text, system-ui, -apple-system, sans-serif",
+            {isAuthenticated ? (
+              <div className="flex flex-col gap-2">
+                <Link
+                  to="/user_profile"
+                  onClick={closeMobile}
+                  className="flex items-center gap-2 text-white/80 hover:text-white transition-colors no-underline"
+                >
+                  <UserIcon className="text-[#86868b]" />
+                  <span
+                    className="text-[14px] font-normal tracking-[-0.224px]"
+                    style={{
+                      fontFamily:
+                        "SF Pro Text, system-ui, -apple-system, sans-serif",
+                    }}
+                  >
+                    {user?.name ? user.name.split(" ")[0] : "User"}
+                  </span>
+                </Link>
+                <button
+                  onClick={async () => {
+                    await logout();
+                    closeMobile();
+                    // giữ đơn giản: không navigate cưỡng bức
+                  }}
+                  className="text-left text-[14px] text-[#e30000] hover:text-white transition-colors bg-transparent border-none outline-none cursor-pointer w-full"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  closeMobile();
+                  openLogin();
                 }}
+                className="flex items-center gap-2 text-white/80 hover:text-white transition-colors bg-transparent border-none outline-none cursor-pointer w-full"
               >
-                Đăng nhập / Đăng ký
-              </span>
-            </button>
+                <UserIcon className="text-[#86868b]" />
+                <span
+                  className="text-[14px] font-normal tracking-[-0.224px]"
+                  style={{
+                    fontFamily:
+                      "SF Pro Text, system-ui, -apple-system, sans-serif",
+                  }}
+                >
+                  Đăng nhập / Đăng ký
+                </span>
+              </button>
+            )}
           </div>
 
           {/* Nav items with accordion */}

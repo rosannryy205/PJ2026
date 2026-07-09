@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { useAuthModal } from "../contexts/AuthModalContext";
 import Login from "../auth/Login";
 import Register from "../auth/Register";
-import ForgetPassword from "../auth/Forget_password";
+import ForgetPassword from "../auth/ForgetPassword";
 
 const SF_TEXT = "SF Pro Text, system-ui, -apple-system, sans-serif";
 

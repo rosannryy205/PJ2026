@@ -1,24 +1,59 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+
 
 const SF_DISPLAY = "SF Pro Display, system-ui, -apple-system, sans-serif";
 const SF_TEXT = "SF Pro Text, system-ui, -apple-system, sans-serif";
 
 export default function UserProfile() {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const navigate = useNavigate();
+  const { user, isAuthenticated, loading, logout } = useAuth();
 
-  const user = {
-    name: "John Doe",
-    email: "john.doe@example.com",
-    phone: "+1 234 567 8900",
-    memberSince: "2024"
-  };
-
+  // orders tạm thời giữ nguyên UI; yêu cầu hiện tại tập trung vào bỏ hardcode user.
   const orders = [
-    { id: "W123456789", date: "Jun 15, 2026", total: 1099, status: "Delivered", item: "iPhone 15 Pro" },
-    { id: "W987654321", date: "May 02, 2026", total: 249, status: "Delivered", item: "AirPods Pro (2nd generation)" },
-    { id: "W445566778", date: "Nov 22, 2025", total: 1299, status: "Delivered", item: "MacBook Air M3" }
+    {
+      id: "W123456789",
+      date: "Jun 15, 2026",
+      total: 1099,
+      status: "Delivered",
+      item: "iPhone 15 Pro",
+    },
+    {
+      id: "W987654321",
+      date: "May 02, 2026",
+      total: 249,
+      status: "Delivered",
+      item: "AirPods Pro (2nd generation)",
+    },
+    {
+      id: "W445566778",
+      date: "Nov 22, 2025",
+      total: 1299,
+      status: "Delivered",
+      item: "MacBook Air M3",
+    },
   ];
+
+
+  useEffect(() => {
+    // Nếu chưa auth -> redirect về home
+    if (!loading && !isAuthenticated) {
+      navigate("/");
+    }
+  }, [loading, isAuthenticated, navigate]);
+
+  if (loading) {
+    return (
+      <main
+        className="w-full min-h-screen bg-[#f5f5f7] text-[#1d1d1f] flex items-center justify-center"
+        style={{ fontFamily: SF_TEXT }}
+      >
+        Loading…
+      </main>
+    );
+  }
 
   return (
     <main className="w-full min-h-screen bg-[#f5f5f7] text-[#1d1d1f]" style={{ fontFamily: SF_TEXT }}>
@@ -30,12 +65,13 @@ export default function UserProfile() {
             className="text-[34px] md:text-[40px] font-semibold leading-[1.1] tracking-[-0.374px]"
             style={{ fontFamily: SF_DISPLAY }}
           >
-            Hi, {user.name.split(' ')[0]}.
+            Hi, {(user?.name || "").split(" ")[0] || "User"}.
           </h1>
           <p className="mt-2 text-[17px] text-[#7a7a7a] font-normal">
             Welcome to your account dashboard.
           </p>
         </div>
+
 
         {/* Dashboard Grid */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8">
@@ -65,6 +101,13 @@ export default function UserProfile() {
               <div className="h-px bg-[#f0f0f0] my-2 mx-2"></div>
               
               <button 
+                onClick={async () => {
+                  // xoá session cookie và cập nhật state auth
+                  // (login lại sẽ mở modal)
+                  // giữ UX đơn giản: redirect về home
+                  await logout();
+                  navigate("/");
+                }}
                 className="text-left px-4 py-[11px] rounded-[11px] text-[17px] text-[#e30000] hover:bg-[#fff0f0] transition-all active:scale-95 origin-left"
               >
                 Sign Out
@@ -90,15 +133,18 @@ export default function UserProfile() {
                   <div className="flex flex-col gap-2">
                     <div className="flex flex-col sm:flex-row sm:items-center py-4 border-b border-[#f0f0f0]">
                       <span className="text-[#7a7a7a] text-[17px] w-32 mb-1 sm:mb-0">Name</span>
-                      <span className="text-[17px] font-medium">{user.name}</span>
+                      <span className="text-[17px] font-medium">{user?.name || ""}</span>
+
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center py-4 border-b border-[#f0f0f0]">
                       <span className="text-[#7a7a7a] text-[17px] w-32 mb-1 sm:mb-0">Email</span>
-                      <span className="text-[17px] font-medium">{user.email}</span>
+                      <span className="text-[17px] font-medium">{user?.email || ""}</span>
+
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center py-4">
                       <span className="text-[#7a7a7a] text-[17px] w-32 mb-1 sm:mb-0">Phone</span>
-                      <span className="text-[17px] font-medium">{user.phone}</span>
+                      <span className="text-[17px] font-medium">{user?.phone || ""}</span>
+
                     </div>
                   </div>
                 </div>
