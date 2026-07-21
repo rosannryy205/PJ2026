@@ -51,9 +51,4 @@
 ## 8. Testing
 - Viết test cho các luồng nghiệp vụ chính: đăng ký/đăng nhập, thêm giỏ hàng, đặt hàng, thanh toán, cập nhật tồn kho
 - Chạy lại toàn bộ test liên quan sau khi sửa code, đảm bảo không phá vỡ chức năng cũ
-- Test edge case: hết hàng, sai mã giảm giá, thanh toán thất bại
 
-## 9. Git & Workflow (nếu áp dụng)
-- Commit message rõ ràng, mô tả đúng thay đổi (VD: `fix: sửa lỗi tính tổng giỏ hàng`)
-- Không commit trực tiếp vào nhánh `main`/`production`
-- Không commit file `.env` hoặc file chứa secret

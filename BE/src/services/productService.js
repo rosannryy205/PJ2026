@@ -147,6 +147,7 @@ const getProductById = async (id) => {
   return product;
 };
 
+
 module.exports = {
   getAllProducts,
   getAllProductFeatures,

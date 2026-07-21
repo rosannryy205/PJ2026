@@ -1,13 +1,15 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Loading from "../components/Loading";
 
 const SF_DISPLAY = "SF Pro Display, system-ui, -apple-system, sans-serif";
 const SF_TEXT = "SF Pro Text, system-ui, -apple-system, sans-serif";
 
 export default function Check_out() {
   const navigate = useNavigate();
-  const [paymentMethod, setPaymentMethod] = useState('cod');
-  
+  const [paymentMethod, setPaymentMethod] = useState("cod");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Mock cart items (same as Cart.jsx for consistency)
   const cartItems = [
     {
@@ -35,11 +37,19 @@ export default function Check_out() {
     0,
   );
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simulate checkout
-    alert("Order placed successfully!");
-    navigate("/");
+    if (isSubmitting) return;
+
+    try {
+      setIsSubmitting(true);
+      // Simulate checkout
+      await new Promise((r) => setTimeout(r, 800));
+      alert("Order placed successfully!");
+      navigate("/");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -62,11 +72,14 @@ export default function Check_out() {
 
         <div className="flex flex-col lg:flex-row gap-12 xl:gap-24">
           {/* Left Column: Form */}
-          <div className="flex-1 w-full fade-in-up" style={{ animationDelay: '100ms' }}>
+          <div
+            className="flex-1 w-full fade-in-up"
+            style={{ animationDelay: "100ms" }}
+          >
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* Contact Info */}
               <section>
-                <h2 
+                <h2
                   className="text-[24px] font-semibold leading-[1.14] tracking-[0.196px] mb-6"
                   style={{ fontFamily: SF_DISPLAY }}
                 >
@@ -94,7 +107,7 @@ export default function Check_out() {
 
               {/* Shipping Address */}
               <section>
-                <h2 
+                <h2
                   className="text-[24px] font-semibold leading-[1.14] tracking-[0.196px] mb-6"
                   style={{ fontFamily: SF_DISPLAY }}
                 >
@@ -142,7 +155,7 @@ export default function Check_out() {
 
               {/* Payment */}
               <section>
-                <h2 
+                <h2
                   className="text-[24px] font-semibold leading-[1.14] tracking-[0.196px] mb-6"
                   style={{ fontFamily: SF_DISPLAY }}
                 >
@@ -151,31 +164,35 @@ export default function Check_out() {
 
                 <div className="space-y-4 mb-6">
                   <label className="flex items-center gap-3 cursor-pointer p-4 border border-[#e0e0e0] rounded-lg hover:border-[#0071e3] transition-colors">
-                    <input 
-                      type="radio" 
-                      name="payment" 
-                      value="cod" 
-                      checked={paymentMethod === 'cod'} 
-                      onChange={() => setPaymentMethod('cod')}
+                    <input
+                      type="radio"
+                      name="payment"
+                      value="cod"
+                      checked={paymentMethod === "cod"}
+                      onChange={() => setPaymentMethod("cod")}
                       className="w-5 h-5 accent-[#0066cc]"
                     />
-                    <span className="text-[17px] font-normal text-[#1d1d1f]">Thanh toán khi nhận hàng (COD)</span>
+                    <span className="text-[17px] font-normal text-[#1d1d1f]">
+                      Thanh toán khi nhận hàng (COD)
+                    </span>
                   </label>
-                  
+
                   <label className="flex items-center gap-3 cursor-pointer p-4 border border-[#e0e0e0] rounded-lg hover:border-[#0071e3] transition-colors">
-                    <input 
-                      type="radio" 
-                      name="payment" 
-                      value="card" 
-                      checked={paymentMethod === 'card'} 
-                      onChange={() => setPaymentMethod('card')}
+                    <input
+                      type="radio"
+                      name="payment"
+                      value="card"
+                      checked={paymentMethod === "card"}
+                      onChange={() => setPaymentMethod("card")}
                       className="w-5 h-5 accent-[#0066cc]"
                     />
-                    <span className="text-[17px] font-normal text-[#1d1d1f]">Thanh toán trước (Thẻ tín dụng)</span>
+                    <span className="text-[17px] font-normal text-[#1d1d1f]">
+                      Thanh toán trước (Thẻ tín dụng)
+                    </span>
                   </label>
                 </div>
 
-                {paymentMethod === 'card' && (
+                {paymentMethod === "card" && (
                   <div className="space-y-4 animate-fade-in">
                     <div>
                       <input
@@ -202,28 +219,39 @@ export default function Check_out() {
                   </div>
                 )}
               </section>
-              
+
               <div className="pt-6 hidden lg:block">
-                 <button
+                <button
                   type="submit"
-                  className="w-full bg-[#0066cc] text-[#ffffff] px-[28px] py-[14px] rounded-full text-[18px] font-normal hover:bg-[#0071e3] active:scale-95 transition-all"
+                  disabled={isSubmitting}
+                  className="w-full bg-[#0066cc] text-[#ffffff] px-[28px] py-[14px] rounded-full text-[18px] font-normal hover:bg-[#0071e3] active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  Place Order
+                  {isSubmitting ? (
+                    <span className="inline-flex items-center justify-center gap-3">
+                      <Loading variant="inline" size="small" />
+                      Placing...
+                    </span>
+                  ) : (
+                    "Place Order"
+                  )}
                 </button>
               </div>
             </form>
           </div>
 
           {/* Right Column: Order Summary */}
-          <div className="w-full lg:w-[420px] shrink-0 fade-in-up" style={{ animationDelay: '200ms' }}>
+          <div
+            className="w-full lg:w-[420px] shrink-0 fade-in-up"
+            style={{ animationDelay: "200ms" }}
+          >
             <div className="bg-[#f5f5f7] rounded-[18px] p-6 lg:p-8 lg:sticky lg:top-24">
-              <h2 
+              <h2
                 className="text-[24px] font-semibold leading-[1.14] tracking-[0.196px] mb-6"
                 style={{ fontFamily: SF_DISPLAY }}
               >
                 Order Summary
               </h2>
-              
+
               <div className="space-y-6 mb-6">
                 {cartItems.map((item) => (
                   <div key={item.id} className="flex gap-4 items-center">
@@ -238,7 +266,9 @@ export default function Check_out() {
                       <h3 className="text-[14px] font-semibold tracking-[-0.224px] text-[#1d1d1f]">
                         {item.name}
                       </h3>
-                      <p className="text-[12px] text-[#7a7a7a]">Qty: {item.quantity}</p>
+                      <p className="text-[12px] text-[#7a7a7a]">
+                        Qty: {item.quantity}
+                      </p>
                     </div>
                     <div className="text-[14px] font-semibold text-[#1d1d1f]">
                       ${(item.price * item.quantity).toLocaleString()}
@@ -250,20 +280,22 @@ export default function Check_out() {
               <div className="border-t border-[#e0e0e0] pt-6 space-y-4">
                 <div className="flex justify-between items-center text-[14px] text-[#1d1d1f]">
                   <span>Subtotal</span>
-                  <span className="font-semibold">${total.toLocaleString()}</span>
+                  <span className="font-semibold">
+                    ${total.toLocaleString()}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center text-[14px] text-[#1d1d1f]">
                   <span>Shipping</span>
                   <span className="font-semibold">FREE</span>
                 </div>
                 <div className="flex justify-between items-center pt-4 border-t border-[#e0e0e0]">
-                  <span 
+                  <span
                     className="text-[21px] font-semibold tracking-[0.231px]"
                     style={{ fontFamily: SF_DISPLAY }}
                   >
                     Total
                   </span>
-                  <span 
+                  <span
                     className="text-[21px] font-semibold tracking-[0.231px]"
                     style={{ fontFamily: SF_DISPLAY }}
                   >
@@ -273,12 +305,20 @@ export default function Check_out() {
               </div>
 
               <div className="mt-8 lg:hidden">
-                 <button
+                <button
                   type="submit"
                   onClick={handleSubmit}
-                  className="w-full bg-[#0066cc] text-[#ffffff] px-[28px] py-[14px] rounded-full text-[18px] font-normal hover:bg-[#0071e3] active:scale-95 transition-all"
+                  disabled={isSubmitting}
+                  className="w-full bg-[#0066cc] text-[#ffffff] px-[28px] py-[14px] rounded-full text-[18px] font-normal hover:bg-[#0071e3] active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  Place Order
+                  {isSubmitting ? (
+                    <span className="inline-flex items-center justify-center gap-3">
+                      <Loading variant="inline" size="small" />
+                      Placing...
+                    </span>
+                  ) : (
+                    "Place Order"
+                  )}
                 </button>
               </div>
             </div>

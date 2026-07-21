@@ -1,21 +1,11 @@
-# TODO - Auth Login/Logout (JWT in httpOnly cookie)
+# TODO
 
-## BE (Backend)
-- [ ] Thêm route module `/api/auth` : `login`, `logout`, `me`
-- [ ] Implement `POST /api/auth/login` : validate user -> sign JWT -> set `httpOnly` cookie
-- [ ] Implement `POST /api/auth/logout` : clear cookie
-- [ ] Implement `GET /api/auth/me` : middleware `requireAuth` -> return user
-- [ ] Thêm middleware `requireAuth` verify JWT từ cookie
+## Mục tiêu: Sửa lỗi click 1 lần => cart quantity tăng lên 2
 
-## FE (Frontend)
-- [ ] Tạo `AuthContext` với `isAuthenticated`, `user`, `loading`, `refreshMe()`, `logout()`
-- [ ] Bọc `AuthProvider` trong `App.jsx`
-- [ ] Sửa `Login.jsx`: POST `/api/auth/login` với `credentials:'include'`, đóng modal, `refreshMe()`, `navigate('/')`
-- [ ] Sửa `Header.jsx`: nếu logged in -> icon + tên user -> link `/user_profile`
-- [ ] Sửa `User_profile.jsx`: bỏ hardcode, render từ `user` từ context (`me`)
+- [x] Đọc `BE/src/services/cartService.js` để xác nhận logic cộng quantity (findOrCreate + cộng quantity khi item tồn tại)
+- [x] Đọc `FE/my-app/src/pages/ProductDetail.jsx` để kiểm tra logic gọi API add-to-cart
+- [x] Đọc `FE/my-app/src/pages/Cart.jsx` để xác nhận render quantity lấy trực tiếp từ BE
+- [x] Đọc `BE/src/routers/cartRouter.js` và `BE/src/middleware/requireAuth.js` để xác nhận route/middleware
+- [x] Cập nhật `FE/my-app/src/pages/ProductDetail.jsx`: thay chặn double-submit từ `useState` sang `useRef`, đảm bảo 1 click chỉ gửi 1 request
 
-## Test (dừng khi pass)
-- [ ] Login thành công: navigate `/` và Header hiển thị tên
-- [ ] Click icon -> `/user_profile` và render name/email từ `me`
-- [ ] Refresh trang vẫn giữ login (AuthContext gọi `me`)
-
+- [ ] (sau fix) kiểm tra lại flow UI: bấm 1 lần vào “Thêm vào giỏ”, vào `/cart` và confirm quantity = 1

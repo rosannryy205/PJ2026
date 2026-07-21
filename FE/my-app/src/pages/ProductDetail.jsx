@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
-const API_BASE_URL = "http://localhost:3000/api";
+import { useAuth } from "../contexts/AuthContext";
+
+const API_BASE_URL = "http://localhost:3000/"; // Cấu hình URL API backend
 
 // Nút bấm dùng lại cho CTA chính/phụ.
 const ActionButton = ({ children, onClick, ariaLabel, variant }) => {
@@ -92,7 +94,8 @@ export default function Product_detail() {
     for (const v of productVariants) {
       if (v?.color && !colors.has(v.color)) colors.set(v.color, v.color);
       if (v?.ram && !rams.has(v.ram)) rams.set(v.ram, v.ram);
-      if (v?.storage && !storages.has(v.storage)) storages.set(v.storage, v.storage);
+      if (v?.storage && !storages.has(v.storage))
+        storages.set(v.storage, v.storage);
     }
 
     return {
@@ -108,7 +111,10 @@ export default function Product_detail() {
     if (!productVariants.length) return null;
 
     const found = productVariants.find(
-      (v) => v.color === selected.color && v.ram === selected.ram && v.storage === selected.storage
+      (v) =>
+        v.color === selected.color &&
+        v.ram === selected.ram &&
+        v.storage === selected.storage,
     );
 
     return found ?? productVariants[0];
@@ -124,7 +130,6 @@ export default function Product_detail() {
     });
   }, [selectedVariant]);
 
-
   // Fetch product theo id từ FE -> BE.
   useEffect(() => {
     const fetchProduct = async () => {
@@ -139,7 +144,9 @@ export default function Product_detail() {
         setLoading(true);
         setError(null);
 
-        const res = await fetch(`${API_BASE_URL}/products/${productIdFromQuery}`);
+        const res = await fetch(
+          `${API_BASE_URL}api/products/${productIdFromQuery}`,
+        );
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const json = await res.json();
@@ -156,7 +163,6 @@ export default function Product_detail() {
     fetchProduct();
   }, [productIdFromQuery]);
 
-
   // Quy đổi format tiền theo VND.
   const pricing = useMemo(
     () => ({
@@ -167,27 +173,40 @@ export default function Product_detail() {
         return new Intl.NumberFormat("vi-VN").format(Math.round(num)) + " ₫";
       },
     }),
-    []
+    [],
   );
 
   // Main image theo variant đang chọn (ưu tiên images gắn với variant_id).
- const mainImage = useMemo(() => {
-  const images = product?.images ?? [];
-  if (!images.length) return "/src/assets/product.jpg";
+  const mainImage = useMemo(() => {
+    const images = product?.images ?? [];
+    if (!images.length) return "/src/assets/product.jpg";
 
-  // 1. Nếu có selectedVariant, ưu tiên tìm ảnh của biến thể đó trước
-  if (selectedVariant?.id) {
-    const matched = images.find((img) => String(img.variant_id) === String(selectedVariant.id));
-    if (matched) {
-      return matched.img_url || matched.image_url || matched.url || matched.path || "/src/assets/product.jpg";
+    // 1. Nếu có selectedVariant, ưu tiên tìm ảnh của biến thể đó trước
+    if (selectedVariant?.id) {
+      const matched = images.find(
+        (img) => String(img.variant_id) === String(selectedVariant.id),
+      );
+      if (matched) {
+        return (
+          matched.img_url ||
+          matched.image_url ||
+          matched.url ||
+          matched.path ||
+          "/src/assets/product.jpg"
+        );
+      }
     }
-  }
 
-  // 2. LÀM ĐIỀU NÀY NẾU TRÊN KHÔNG KHỚP: Lấy ảnh đầu tiên của mảng images làm ảnh chính
-  const firstImage = images[0];
-  return firstImage.img_url || firstImage.image_url || firstImage.url || firstImage.path || "/src/assets/product.jpg";
-
-}, [product, selectedVariant]); // Thêm dependency array để useMemo hoạt động đúng
+    // 2. LÀM ĐIỀU NÀY NẾU TRÊN KHÔNG KHỚP: Lấy ảnh đầu tiên của mảng images làm ảnh chính
+    const firstImage = images[0];
+    return (
+      firstImage.img_url ||
+      firstImage.image_url ||
+      firstImage.url ||
+      firstImage.path ||
+      "/src/assets/product.jpg"
+    );
+  }, [product, selectedVariant]); // Thêm dependency array để useMemo hoạt động đúng
   // Map text theo API (ưu tiên field có sẵn; tránh hard-code khi có data từ BE).
   const mapped = useMemo(() => {
     const name = product?.name || "Sản phẩm";
@@ -214,8 +233,10 @@ export default function Product_detail() {
   }, [selectedVariant]);
 
   // Mô tả: ưu tiên description từ BE.
-  const computedDescription = useMemo(() => mapped.description || "", [mapped.description]);
-
+  const computedDescription = useMemo(
+    () => mapped.description || "",
+    [mapped.description],
+  );
 
   // UI phần liên quan: giữ demo để không phụ thuộc API.
   const relatedProducts = useMemo(
@@ -253,24 +274,100 @@ export default function Product_detail() {
         image: "/src/assets/product.jpg",
       },
     ],
-    []
+    [],
   );
 
-  // Giỏ + lưu (demo UI).
+  const { isAuthenticated, loading: authLoading, refreshMe } = useAuth();
+  const navigate = useNavigate();
+
+  // Giỏ + lưu (UI)
   const [inCart, setInCart] = useState(false);
   const [saved, setSaved] = useState(false);
-
-  const handleAddToCart = () => {
-    setInCart(true);
-    setTimeout(() => setInCart(false), 1600);
-  };
+  const [cartError, setCartError] = useState(null);
 
   const toggleSave = () => setSaved((s) => !s);
+
+  // Chống double-submit khi user double-click / request bị gọi lại do re-render.
+  // Dùng ref để chặn ngay trong cùng tick (không phụ thuộc setState timing).
+  const isPostingRef = useRef(false);
+  const [isPosting, setIsPosting] = useState(false);
+
+  // Thêm sản phẩm vào giỏ trong database
+  // - Bắt buộc đăng nhập
+  // - Nếu user chưa có cart => BE tự tạo cart
+  // - Sau khi thêm => render lại dữ liệu cart ở Cart.jsx
+  const handleAddToCart = async () => {
+    setCartError(null);
+
+    // Chống double-submit (double-click / submit lại do re-render)
+    if (isPostingRef.current) return;
+    isPostingRef.current = true;
+
+    // Nếu chưa xác định auth thì tránh gọi API
+    if (authLoading) return;
+
+    // Bắt buộc đăng nhập
+    if (!isAuthenticated) {
+      setCartError("Bạn cần đăng nhập để thêm vào giỏ.");
+      return;
+    }
+
+    if (!selectedVariant?.id || !product?.id) {
+      setCartError("Vui lòng chọn biến thể sản phẩm hợp lệ.");
+      return;
+    }
+
+    try {
+      setInCart(true);
+      setIsPosting(true);
+
+      const res = await fetch(`${API_BASE_URL}api/cart/items`, {
+        method: "POST",
+        credentials: "include", // gửi cookie httpOnly
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productId: product.id,
+          variantId: selectedVariant.id,
+          quantity: 1,
+        }),
+      });
+
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(payload?.message || `HTTP ${res.status}`);
+      }
+
+      // Sync lại session user (tùy BE, nhưng giúp đảm bảo FE biết auth mới nhất)
+      await refreshMe();
+
+      // Thành công => tắt trạng thái UI và điều hướng tới trang cart để render lại
+      setTimeout(() => {
+        setInCart(false);
+        setIsPosting(false);
+        isPostingRef.current = false;
+      }, 300);
+      navigate("/cart");
+    } catch (e) {
+      setCartError(e?.message || "Không thể thêm vào giỏ.");
+      setTimeout(() => {
+        setInCart(false);
+        setIsPosting(false);
+        isPostingRef.current = false;
+      }, 1000);
+    }
+  };
 
   // Loading/Error UI.
   if (loading) {
     return (
-      <section className="w-full" style={{ fontFamily: "SF Pro Text, system-ui, -apple-system, sans-serif" }}>
+      <section
+        className="w-full"
+        style={{
+          fontFamily: "SF Pro Text, system-ui, -apple-system, sans-serif",
+        }}
+      >
         <div className="w-full px-4 py-16 text-center">Loading...</div>
       </section>
     );
@@ -278,8 +375,15 @@ export default function Product_detail() {
 
   if (error) {
     return (
-      <section className="w-full" style={{ fontFamily: "SF Pro Text, system-ui, -apple-system, sans-serif" }}>
-        <div className="w-full px-4 py-8 bg-red-50 text-center text-red-700">{error}</div>
+      <section
+        className="w-full"
+        style={{
+          fontFamily: "SF Pro Text, system-ui, -apple-system, sans-serif",
+        }}
+      >
+        <div className="w-full px-4 py-8 bg-red-50 text-center text-red-700">
+          {error}
+        </div>
       </section>
     );
   }
@@ -289,10 +393,15 @@ export default function Product_detail() {
     <section
       aria-label="Chi tiết sản phẩm"
       className="w-full"
-      style={{ fontFamily: "SF Pro Text, system-ui, -apple-system, sans-serif" }}
+      style={{
+        fontFamily: "SF Pro Text, system-ui, -apple-system, sans-serif",
+      }}
     >
       {/* SECTION 1: Ảnh + Thông tin */}
-      <div className="min-h-[100svh] bg-[#ffffff]" style={{ overflow: "hidden" }}>
+      <div
+        className="min-h-[100svh] bg-[#ffffff]"
+        style={{ overflow: "hidden" }}
+      >
         <div className="w-full mx-auto px-4 sm:px-6 lg:px-10 pt-8 sm:pt-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 items-start gap-8 lg:gap-10">
             <div className="w-full" aria-label="Ảnh sản phẩm">
@@ -318,16 +427,16 @@ export default function Product_detail() {
 
             <div className="w-full">
               <div className="pt-4 sm:pt-6 lg:pt-2">
-                  {/* Nhãn danh mục/brand (API hiện có thể không trả category, nên dùng brand nếu có) */}
-                  <div className="text-[12px] font-normal tracking-[-0.12px] leading-none text-[#7a7a7a] mb-3">
-                    {mapped.category || ""}
-                  </div>
-
+                {/* Nhãn danh mục/brand (API hiện có thể không trả category, nên dùng brand nếu có) */}
+                <div className="text-[12px] font-normal tracking-[-0.12px] leading-none text-[#7a7a7a] mb-3">
+                  {mapped.category || ""}
+                </div>
 
                 <h1
                   className="text-[40px] sm:text-[44px] font-semibold tracking-[-0.374px] leading-[1.1] text-[#1d1d1f]"
                   style={{
-                    fontFamily: "SF Pro Display, system-ui, -apple-system, sans-serif",
+                    fontFamily:
+                      "SF Pro Display, system-ui, -apple-system, sans-serif",
                     letterSpacing: "-0.374px",
                   }}
                 >
@@ -337,7 +446,8 @@ export default function Product_detail() {
                 <p className="text-[17px] font-normal tracking-[-0.374px] leading-[1.47] text-[#1d1d1f] mt-3">
                   {/* short desc: ưu tiên description BE, cắt ngắn nếu có */}
                   {computedDescription
-                    ? computedDescription.slice(0, 120) + (computedDescription.length > 120 ? "..." : "")
+                    ? computedDescription.slice(0, 120) +
+                      (computedDescription.length > 120 ? "..." : "")
                     : ""}
                 </p>
 
@@ -348,7 +458,6 @@ export default function Product_detail() {
                   <div className="text-[34px] font-semibold tracking-[-0.374px] leading-[1.47] text-[#1d1d1f] mt-2">
                     {displayPrice ? pricing.format(displayPrice) : ""}
                   </div>
-
                 </div>
 
                 {/* Biến thể: render option lấy từ API để dễ mở rộng */}
@@ -392,20 +501,33 @@ export default function Product_detail() {
                   <div className="mt-4 text-[14px] text-[#1d1d1f]">
                     {typeof selectedVariant?.stock === "number" ? (
                       <span className="text-[#7a7a7a]">
-                        Còn lại: <b className="text-[#1d1d1f]">{selectedVariant.stock}</b>
+                        Còn lại:{" "}
+                        <b className="text-[#1d1d1f]">
+                          {selectedVariant.stock}
+                        </b>
                       </span>
                     ) : null}
                   </div>
-
                 </div>
 
-
                 <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:items-center">
-                  <ActionButton variant="primary" ariaLabel="Thêm vào giỏ" onClick={handleAddToCart}>
-                    {inCart ? "Đã thêm ✓" : "Thêm vào giỏ"}
+                  <ActionButton
+                    variant="primary"
+                    ariaLabel="Thêm vào giỏ"
+                    onClick={handleAddToCart}
+                  >
+                    {inCart
+                      ? "Đã thêm ✓"
+                      : isPosting
+                        ? "Đang thêm..."
+                        : "Thêm vào giỏ"}
                   </ActionButton>
 
-                  <ActionButton variant="secondary" ariaLabel="Lưu sản phẩm" onClick={toggleSave}>
+                  <ActionButton
+                    variant="secondary"
+                    ariaLabel="Lưu sản phẩm"
+                    onClick={toggleSave}
+                  >
                     {saved ? "Đã lưu" : "Lưu sản phẩm"}
                   </ActionButton>
                 </div>
@@ -417,17 +539,20 @@ export default function Product_detail() {
 
       {/* SECTION 2: Mô tả */}
       <div className="bg-[#f5f5f7] border-t border-[#e0e0e0]">
-
         <div className="w-full mx-auto px-4 sm:px-6 lg:px-10 py-16">
           <div className="flex items-start justify-between gap-6">
             <div>
-              <div className="text-[12px] font-semibold tracking-[0.231px] leading-none text-[#7a7a7a] mb-3" style={{ letterSpacing: "0.231px" }}>
+              <div
+                className="text-[12px] font-semibold tracking-[0.231px] leading-none text-[#7a7a7a] mb-3"
+                style={{ letterSpacing: "0.231px" }}
+              >
                 MÔ TẢ SẢN PHẨM
               </div>
               <h2
                 className="text-[34px] font-semibold tracking-[-0.374px] leading-[1.47] text-[#1d1d1f]"
                 style={{
-                  fontFamily: "SF Pro Display, system-ui, -apple-system, sans-serif",
+                  fontFamily:
+                    "SF Pro Display, system-ui, -apple-system, sans-serif",
                   letterSpacing: "-0.374px",
                 }}
               >
@@ -443,8 +568,15 @@ export default function Product_detail() {
 
             {/* Specs: chưa map theo BE, nên dùng demo tạm */}
             <ul className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {["Thông tin chi tiết", "Tính năng nổi bật", "Chất lượng sản phẩm"].map((b) => (
-                <li key={b} className="rounded-[11px] bg-white border border-[rgba(0,0,0,0.08)] p-4">
+              {[
+                "Thông tin chi tiết",
+                "Tính năng nổi bật",
+                "Chất lượng sản phẩm",
+              ].map((b) => (
+                <li
+                  key={b}
+                  className="rounded-[11px] bg-white border border-[rgba(0,0,0,0.08)] p-4"
+                >
                   <p className="text-[14px] font-semibold tracking-[-0.224px] leading-[1.43] text-[#1d1d1f]">
                     {b}
                   </p>
@@ -465,7 +597,10 @@ export default function Product_detail() {
               </div>
               <h2
                 className="text-[40px] font-semibold tracking-[-0.374px] leading-[1.1] text-[#1d1d1f]"
-                style={{ fontFamily: "SF Pro Display, system-ui, -apple-system, sans-serif" }}
+                style={{
+                  fontFamily:
+                    "SF Pro Display, system-ui, -apple-system, sans-serif",
+                }}
               >
                 Gợi ý dành cho bạn
               </h2>
@@ -506,7 +641,10 @@ export default function Product_detail() {
                 <div className="mt-8 transition-transform duration-300 ease-out group-hover:-translate-y-1">
                   <h3
                     className="text-[17px] sm:text-[18px] font-semibold leading-[1.24] tracking-[-0.374px]"
-                    style={{ fontFamily: "SF Pro Text, system-ui, -apple-system, sans-serif" }}
+                    style={{
+                      fontFamily:
+                        "SF Pro Text, system-ui, -apple-system, sans-serif",
+                    }}
                   >
                     {p.name}
                   </h3>
@@ -514,7 +652,8 @@ export default function Product_detail() {
                     title={p.tagline}
                     className="w-full min-w-0 mt-2 text-[17px] leading-[1.47] tracking-[-0.374px] line-clamp-2 h-[50px] overflow-hidden text-ellipsis"
                     style={{
-                      fontFamily: "SF Pro Text, system-ui, -apple-system, sans-serif",
+                      fontFamily:
+                        "SF Pro Text, system-ui, -apple-system, sans-serif",
                       fontWeight: 400,
                       color: "#1d1d1f",
                     }}
@@ -526,7 +665,10 @@ export default function Product_detail() {
                     <a
                       href={p.href}
                       className="inline-flex items-center justify-center rounded-full bg-[#0066cc] text-white text-[18px] font-light leading-none px-[28px] py-[14px] hover:bg-[#0071e3] active:scale-95 transition-all no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2"
-                      style={{ fontFamily: "SF Pro Text, system-ui, -apple-system, sans-serif" }}
+                      style={{
+                        fontFamily:
+                          "SF Pro Text, system-ui, -apple-system, sans-serif",
+                      }}
                       aria-label={`Xem ${p.name}`}
                     >
                       {p.cta}
@@ -552,4 +694,3 @@ export default function Product_detail() {
     </section>
   );
 }
-

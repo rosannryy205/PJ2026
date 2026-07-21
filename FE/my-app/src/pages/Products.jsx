@@ -1,5 +1,6 @@
 import React from "react";
 import { useSearchParams } from "react-router-dom";
+import Loading from "../components/Loading";
 
 const SF_DISPLAY = "SF Pro Display, system-ui, -apple-system, sans-serif";
 const SF_TEXT = "SF Pro Text, system-ui, -apple-system, sans-serif";
@@ -116,7 +117,9 @@ export default function Products() {
         if (categorySlug) query.set("category", categorySlug);
         if (brandSlug) query.set("brand", brandSlug);
 
-        const res = await fetch(`${API_BASE_URL}/products/?${query.toString()}`);
+        const res = await fetch(
+          `${API_BASE_URL}/products/?${query.toString()}`,
+        );
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const json = await res.json();
@@ -185,8 +188,18 @@ export default function Products() {
 
   if (loading) {
     return (
-      <section className="w-full" style={{ fontFamily: SF_TEXT }}>
-        <div className="w-full px-4 py-16 text-center">Loading...</div>
+      <section
+        className="w-full"
+        style={{ fontFamily: SF_TEXT, position: "relative", minHeight: 300 }}
+      >
+        <Loading
+          variant="fullscreen"
+          size="medium"
+          text="Loading..."
+          shouldShow={true}
+          minDurationMs={1000}
+          maxDurationMs={3000}
+        />
       </section>
     );
   }
@@ -229,7 +242,8 @@ export default function Products() {
               className="mt-3 text-[17px] leading-[1.47] tracking-[-0.374px] text-[#cccccc]"
               style={{ fontFamily: SF_TEXT }}
             >
-              Mỗi trang hiển thị tối đa 16 sản phẩm — đồng bộ theo cat/brand từ Header.
+              Mỗi trang hiển thị tối đa 16 sản phẩm — đồng bộ theo cat/brand từ
+              Header.
             </p>
           </div>
 
@@ -242,7 +256,10 @@ export default function Products() {
             </div>
 
             {products.length === 0 ? (
-              <div className="text-center mt-14" style={{ fontFamily: SF_TEXT }}>
+              <div
+                className="text-center mt-14"
+                style={{ fontFamily: SF_TEXT }}
+              >
                 <div className="text-[17px] tracking-[-0.374px] leading-[1.47] text-[#7a7a7a]">
                   Không có sản phẩm.
                 </div>
@@ -284,7 +301,8 @@ export default function Products() {
                   className="rounded-full px-[22px] py-[11px] text-[17px] tracking-[-0.374px] leading-[1.47] transition-all"
                   style={{
                     fontFamily: SF_TEXT,
-                    backgroundColor: page === totalPages ? "#f0f0f0" : "#0066cc",
+                    backgroundColor:
+                      page === totalPages ? "#f0f0f0" : "#0066cc",
                     color: page === totalPages ? "#7a7a7a" : "#ffffff",
                     opacity: page === totalPages ? 0.85 : 1,
                     border: "none",

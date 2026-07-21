@@ -10,8 +10,6 @@ const authRoutes = require("./routers/authRouter"); // auth module
 // CORS: cho phép FE chạy tại http://localhost:5173 truy cập API
 app.use(
   cors({
-
-
     origin: [
       "http://localhost:5175",
       "http://localhost:5173",
@@ -20,7 +18,7 @@ app.use(
     ],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
-  })
+  }),
 );
 
 // Middleware để phân tích dữ liệu JSON từ request body
@@ -30,7 +28,6 @@ app.use(express.urlencoded({ extended: true }));
 // Parse cookie để đọc JWT httpOnly (req.cookies)
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
-
 
 // Định nghĩa các route cho người dùng
 app.use("/api/users", userRoutes);
@@ -44,12 +41,14 @@ app.use("/api/register", registerRoutes);
 // Định nghĩa route auth (login/me/logout)
 app.use("/api/auth", authRoutes);
 
+// Định nghĩa route cho giỏ hàng
+const cartRoutes = require("./routers/cartRouter");
+app.use("/api/cart", cartRoutes);
 
 // Route mặc định để kiểm tra API
 app.get("/", (req, res) => {
-    res.send("Welcome to the User Management API");
+  res.send("Welcome to the User Management API");
 });
-
 
 // Error handler tập trung
 app.use(require("./middleware/errorHandler"));
