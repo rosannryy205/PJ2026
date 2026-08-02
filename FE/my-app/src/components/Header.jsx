@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuthModal } from "../contexts/AuthModalContext";
-import { useAuth } from "../contexts/AuthContext";
-
+import { useAuthModal } from "../contexts/authModalContext";
+import { useAuth } from "../contexts/authContext";
 
 // Menu dữ liệu (category -> brand) sẽ được render động từ backend.
 // Vì yêu cầu "xóa bỏ hết dữ liệu tĩnh ở FE" nên không còn hardcode navItems nữa.
-
 
 /* ─── SVG Icons ─── */
 function SearchIcon({ className = "" }) {
@@ -337,7 +335,9 @@ export default function Header() {
 
         setCategories(data); // Lưu categories vào state để render menu động
       } catch (err) {
-        setErrorCategories(err?.message || "Không lấy được danh mục từ backend"); // Lưu thông tin lỗi
+        setErrorCategories(
+          err?.message || "Không lấy được danh mục từ backend",
+        ); // Lưu thông tin lỗi
         setCategories([]); // Reset menu nếu lỗi
       } finally {
         setLoadingCategories(false); // Tắt loading dù thành công hay thất bại
@@ -346,7 +346,6 @@ export default function Header() {
 
     fetchCategories(); // Gọi fetch 1 lần khi component mount
   }, []);
-
 
   /* Track scroll for subtle shadow on sticky nav */
   useEffect(() => {
@@ -452,7 +451,7 @@ export default function Header() {
                             return {
                               label: brand?.name || "(Không rõ brand)", // Tên brand để hiển thị
                               href: `/products?brand=${encodeURIComponent(
-                                brand?.slug
+                                brand?.slug,
                               )}&cate=${encodeURIComponent(cate.slug)}`, // Link lọc theo brand + cat
                             };
                           })}
@@ -462,7 +461,6 @@ export default function Header() {
                 ))
               )}
             </div>
-
 
             {/* ── Right Actions ── */}
             <div className="flex items-center gap-[12px]">
@@ -552,18 +550,6 @@ export default function Header() {
 
             {/* Right: utility links + CTA */}
             <div className="flex items-center gap-[20px]">
-              <Link
-                to="/products"
-                className="text-[14px] font-normal tracking-[-0.224px] leading-[1.29] text-[#1d1d1f] hover:text-[#0066cc] transition-colors no-underline"
-              >
-                Tất cả sản phẩm
-              </Link>
-              <Link
-                to="/products?cat=mac"
-                className="text-[14px] font-normal tracking-[-0.224px] leading-[1.29] text-[#1d1d1f] hover:text-[#0066cc] transition-colors no-underline"
-              >
-                Mới nhất
-              </Link>
               <Link
                 to="/products?sale=true"
                 className="text-[14px] font-normal tracking-[-0.224px] leading-[1.29] text-[#1d1d1f] hover:text-[#0066cc] transition-colors no-underline"
@@ -679,7 +665,9 @@ export default function Header() {
           {/* Nav items with accordion */}
           <div className="px-5 py-2">
             {loadingCategories ? (
-              <div className="py-[10px] text-white/70">Đang tải danh mục...</div>
+              <div className="py-[10px] text-white/70">
+                Đang tải danh mục...
+              </div>
             ) : (
               // Duyệt categories từ backend để render accordion menu động
               categories.map((cat) => (
@@ -699,8 +687,8 @@ export default function Header() {
                             return {
                               label: brand?.name || "(Không rõ brand)", // Text hiển thị
                               href: `/products?brand=${encodeURIComponent(
-                                brand?.slug
-                              )}&cat=${encodeURIComponent(cat.slug)}` , // Link lọc theo brand + cat
+                                brand?.slug,
+                              )}&cat=${encodeURIComponent(cat.slug)}`, // Link lọc theo brand + cat
                             };
                           })
                         : undefined,
@@ -708,7 +696,6 @@ export default function Header() {
                 />
               ))
             )}
-
           </div>
 
           {/* CTA button */}

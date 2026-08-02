@@ -7,15 +7,20 @@ const categoryRoutes = require("./routers/categoryRouter"); //gọi các route t
 const registerRoutes = require("./routers/registerRouter"); //gọi các route từ registerRouter.js
 const authRoutes = require("./routers/authRouter"); // auth module
 
-// CORS: cho phép FE chạy tại http://localhost:5173 truy cập API
-app.use(
-  cors({
-    origin: [
+// CORS: cho phép FE chạy tại các origin được cấu hình trong .env
+// Mặc định: http://localhost:5173, http://localhost:5174, http://localhost:5175, http://localhost:5176
+const corsOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",").map((s) => s.trim())
+  : [
       "http://localhost:5175",
       "http://localhost:5173",
       "http://localhost:5174",
       "http://localhost:5176",
-    ],
+    ];
+
+app.use(
+  cors({
+    origin: corsOrigins,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
   }),
@@ -44,6 +49,10 @@ app.use("/api/auth", authRoutes);
 // Định nghĩa route cho giỏ hàng
 const cartRoutes = require("./routers/cartRouter");
 app.use("/api/cart", cartRoutes);
+
+// Định nghĩa route cho đơn hàng
+const orderRoutes = require("./routers/orderRouter");
+app.use("/api/orders", orderRoutes);
 
 // Route mặc định để kiểm tra API
 app.get("/", (req, res) => {

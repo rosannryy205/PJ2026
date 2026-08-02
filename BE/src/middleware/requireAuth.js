@@ -15,7 +15,7 @@ module.exports = function requireAuth(req, res, next) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
-    const secret = process.env.JWT_SECRET || "dev_secret_change_me";
+    const secret = process.env.JWT_SECRET;
     const payload = jwt.verify(token, secret);
 
     // payload dự kiến: { userId }
@@ -25,4 +25,3 @@ module.exports = function requireAuth(req, res, next) {
     return res.status(401).json({ success: false, message: "Unauthorized" });
   }
 };
-

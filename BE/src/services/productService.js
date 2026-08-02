@@ -18,24 +18,22 @@ const getAllProducts = async (category_slug, brand_slug) => {
       where: { slug: category_slug },
     });
 
-    if (!category) return [];  // Kiểm tra object, không phải slug
+    if (!category) return []; // Kiểm tra object, không phải slug
 
     const whereCondition = {
       category_id: category.id,
-    }
+    };
 
+    if (brand_slug) {
+      const brand = await Brand.findOne({
+        where: { slug: brand_slug }, // Tìm Brand theo slug
+      });
 
-    if(brand_slug){
-
-    const brand = await Brand.findOne({
-      where: { slug: brand_slug },  // Tìm Brand theo slug
-    });
-
-    if (brand){
-      whereCondition.brand_id = brand.id
+      if (brand) {
+        whereCondition.brand_id = brand.id;
       }
     }
-   
+
     // Dùng category.id và brand.id
     const products = await Product.findAll({
       where: whereCondition,
@@ -61,8 +59,15 @@ const getAllProducts = async (category_slug, brand_slug) => {
   }
 };
 
-const getAllProductFeatures = async () => {
-  const features = await Product.findAll({
+/**
+ * getAllProductFeatures — Hỗ trợ pagination
+ * @param {Object} options
+ * @param {number} [options.page=1]
+ * @param {number} [options.limit=10]
+ */
+const getAllProductFeatures = async ({ page = 1, limit = 10 } = {}) => {
+  const offset = (Math.max(1, page) - 1) * limit;
+  const { count, rows } = await Product.findAndCountAll({
     include: [
       {
         model: Brand,
@@ -78,13 +83,22 @@ const getAllProductFeatures = async () => {
       },
     ],
     order: [["created_at", "DESC"]],
-    limit: 10, // Giới hạn số lượng sản phẩm trả về
+    limit,
+    offset,
+    distinct: true,
   });
-  return features;
+  return { data: rows, total: count, page, limit };
 };
 
-const getAllProductPopular = async () => {
-  const features = await Product.findAll({
+/**
+ * getAllProductPopular — Hỗ trợ pagination
+ * @param {Object} options
+ * @param {number} [options.page=1]
+ * @param {number} [options.limit=10]
+ */
+const getAllProductPopular = async ({ page = 1, limit = 10 } = {}) => {
+  const offset = (Math.max(1, page) - 1) * limit;
+  const { count, rows } = await Product.findAndCountAll({
     include: [
       {
         model: Brand,
@@ -100,13 +114,22 @@ const getAllProductPopular = async () => {
       },
     ],
     order: [["sold_count", "DESC"]],
-    limit: 10, // Giới hạn số lượng sản phẩm trả về
+    limit,
+    offset,
+    distinct: true,
   });
-  return features;
+  return { data: rows, total: count, page, limit };
 };
 
-const getAllProductNewArrival = async () => {
-  const newarrival = await Product.findAll({
+/**
+ * getAllProductNewArrival — Hỗ trợ pagination
+ * @param {Object} options
+ * @param {number} [options.page=1]
+ * @param {number} [options.limit=10]
+ */
+const getAllProductNewArrival = async ({ page = 1, limit = 10 } = {}) => {
+  const offset = (Math.max(1, page) - 1) * limit;
+  const { count, rows } = await Product.findAndCountAll({
     include: [
       {
         model: Brand,
@@ -122,10 +145,12 @@ const getAllProductNewArrival = async () => {
       },
     ],
     order: [["created_at", "DESC"]],
-    limit: 10, // Giới hạn số lượng sản phẩm trả về
+    limit,
+    offset,
+    distinct: true,
   });
-  return newarrival;
-}
+  return { data: rows, total: count, page, limit };
+};
 
 const getProductById = async (id) => {
   const product = await Product.findByPk(id, {
@@ -146,7 +171,6 @@ const getProductById = async (id) => {
   });
   return product;
 };
-
 
 module.exports = {
   getAllProducts,

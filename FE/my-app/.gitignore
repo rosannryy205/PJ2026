@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+*.md
+!README.md
+.env
+pj26_db.drawio
+skills-lock.json
+.agents

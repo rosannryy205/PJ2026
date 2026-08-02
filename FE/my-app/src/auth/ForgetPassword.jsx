@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuthModal } from "../contexts/AuthModalContext";
+import { useAuthModal } from "../contexts/authModalContext";
 
 const SF_DISPLAY = "SF Pro Display, system-ui, -apple-system, sans-serif";
 const SF_TEXT = "SF Pro Text, system-ui, -apple-system, sans-serif";

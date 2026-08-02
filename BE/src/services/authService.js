@@ -5,7 +5,7 @@ const User = require("../models/userModel");
 
 const buildJwt = ({ userId }) => {
   // JWT đặt trong cookie httpOnly nên client không đọc được token.
-  const secret = process.env.JWT_SECRET || "dev_secret_change_me";
+  const secret = process.env.JWT_SECRET;
   const expiresIn = process.env.JWT_EXPIRES_IN || "7d";
 
   return jwt.sign({ userId }, secret, { expiresIn });
@@ -17,14 +17,8 @@ const buildJwt = ({ userId }) => {
  * - Sign JWT
  */
 const loginService = async ({ email, password }) => {
-  const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
-  const rawPassword = typeof password === "string" ? password : "";
-
-  if (!normalizedEmail || !rawPassword) {
-    const err = new Error("Email and password are required");
-    err.statusCode = 400;
-    throw err;
-  }
+  // Email/password đã được validate bởi express-validator ở router
+  const normalizedEmail = email.trim().toLowerCase();
 
   const user = await User.findOne({
     where: { email: normalizedEmail },
@@ -37,7 +31,7 @@ const loginService = async ({ email, password }) => {
     throw err;
   }
 
-  const ok = await bcrypt.compare(rawPassword, user.password);
+  const ok = await bcrypt.compare(password, user.password);
   if (!ok) {
     const err = new Error("Invalid credentials");
     err.statusCode = 401;
@@ -64,7 +58,7 @@ const loginService = async ({ email, password }) => {
  */
 const meService = async ({ userId }) => {
   const user = await User.findByPk(userId, {
-    attributes: ["id", "name", "email", "avatar", "role"],
+    attributes: ["id", "name", "email", "phone", "address", "avatar", "role"],
   });
 
   if (!user) {
@@ -77,6 +71,8 @@ const meService = async ({ userId }) => {
     id: user.id,
     name: user.name,
     email: user.email,
+    phone: user.phone,
+    address: user.address,
     avatar: user.avatar,
     role: user.role,
   };
@@ -86,4 +82,3 @@ module.exports = {
   loginService,
   meService,
 };
-

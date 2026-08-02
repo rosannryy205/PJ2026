@@ -29,12 +29,8 @@ async function getOrCreateCartByUser(userId, t) {
  * - Tối ưu query: chỉ select cột cần thiết
  */
 async function addToCart({ userId, productId, variantId, quantity = 1 }) {
+  // quantity đã được validate bởi express-validator ở router
   const qty = Number(quantity);
-  if (!Number.isFinite(qty) || qty < 1) {
-    const err = new Error("Invalid quantity");
-    err.statusCode = 400;
-    throw err;
-  }
 
   return sequelize.transaction(async (t) => {
     // validate variant tồn tại + trạng thái (nếu cần)
@@ -206,12 +202,8 @@ async function getCartByUser(userId) {
  * - Dùng cho nút tăng/giảm ở FE
  */
 async function updateCartItemQuantity({ userId, variantId, quantity }) {
+  // quantity đã được validate bởi express-validator ở router
   const qty = Number(quantity);
-  if (!Number.isFinite(qty) || qty < 1) {
-    const err = new Error("Invalid quantity (must be >= 1)");
-    err.statusCode = 400;
-    throw err;
-  }
 
   return sequelize.transaction(async (t) => {
     const cart = await Cart.findOne({

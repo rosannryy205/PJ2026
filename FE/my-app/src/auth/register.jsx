@@ -1,15 +1,13 @@
 import { useEffect, useState, useRef } from "react";
-import { useAuthModal } from "../contexts/AuthModalContext";
+import { useAuthModal } from "../contexts/authModalContext";
 import InlineAlert from "../components/InlineAlert";
-import PasswordStrengthHints from "./PasswordStrengthHints";
-
+import PasswordStrengthHints from "./passwordStrengthHints";
 
 const SF_DISPLAY = "SF Pro Display, system-ui, -apple-system, sans-serif";
 const SF_TEXT = "SF Pro Text, system-ui, -apple-system, sans-serif";
 
 const API_BASE_URL = "http://localhost:3000";
 const REGISTER_ENDPOINT = `${API_BASE_URL}/api/register`;
-
 
 /**
  * Register form — rendered inside AuthModal.
@@ -34,7 +32,6 @@ export default function Register() {
 
   // Reference for the alert auto-dismiss timeout
   const alertTimeoutRef = useRef(null);
-
 
   // ===== Shared API functions (keep all API calls in one place) =====
   const api = {
@@ -137,7 +134,6 @@ export default function Register() {
     }
   }, []);
 
-
   // cooldown tick for resend-code button
   useEffect(() => {
     if (sendCodeCooldownSec <= 0) return;
@@ -148,8 +144,6 @@ export default function Register() {
 
     return () => window.clearInterval(id);
   }, [sendCodeCooldownSec]);
-
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -244,7 +238,7 @@ export default function Register() {
       <div
         className={[
           "flex-1 overscroll-contain custom-scrollbar",
-          showPasswordRules ? "overflow-y-auto" : "overflow-y-hidden"
+          showPasswordRules ? "overflow-y-auto" : "overflow-y-hidden",
         ].join(" ")}
       >
         {/* Form */}
@@ -409,7 +403,6 @@ export default function Register() {
                     ? `Resend in ${sendCodeCooldownSec}s`
                     : "Send Code"}
               </button>
-
             </div>
           </div>
 
@@ -457,4 +450,3 @@ export default function Register() {
     </div>
   );
 }
-

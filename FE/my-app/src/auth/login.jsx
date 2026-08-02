@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useAuthModal } from "../contexts/AuthModalContext";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuthModal } from "../contexts/authModalContext";
+import { useAuth } from "../contexts/authContext";
 import { useNavigate } from "react-router-dom";
 import InlineAlert from "../components/InlineAlert";
 

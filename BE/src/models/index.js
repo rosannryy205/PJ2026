@@ -6,6 +6,10 @@ const Category = require("./categoryModel");
 const CategoryBrand = require("./categoryBrandModel");
 const Cart = require("./cartModel");
 const CartItem = require("./cartItemModel");
+const Order = require("./orderModel");
+const OrderItem = require("./orderItemsModel");
+const User = require("./userModel");
+const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/db");
 
 // 1 Thương hiệu có nhiều sản phẩm
@@ -54,6 +58,24 @@ CartItem.belongsTo(ProductVariant, {
   as: "variant",
 });
 
+// 1 User có nhiều Order
+User.hasMany(Order, { foreignKey: "user_id", as: "orders" });
+Order.belongsTo(User, { foreignKey: "user_id", as: "user" });
+
+// 1 Order có nhiều OrderItem
+Order.hasMany(OrderItem, { foreignKey: "order_id", as: "items" });
+OrderItem.belongsTo(Order, { foreignKey: "order_id", as: "order" });
+
+// 1 ProductVariant có nhiều OrderItem
+ProductVariant.hasMany(OrderItem, {
+  foreignKey: "product_variant_id",
+  as: "order_items",
+});
+OrderItem.belongsTo(ProductVariant, {
+  foreignKey: "product_variant_id",
+  as: "variant",
+});
+
 module.exports = {
   sequelize,
   Brand,
@@ -64,4 +86,7 @@ module.exports = {
   CategoryBrand,
   Cart,
   CartItem,
+  Order,
+  OrderItem,
+  User,
 };

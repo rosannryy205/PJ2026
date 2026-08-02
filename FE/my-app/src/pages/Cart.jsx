@@ -5,9 +5,9 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Link } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
-import Loading from "../components/Loading";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/authContext";
+import Loading from "../components/loading";
 
 const SF_DISPLAY = "SF Pro Display, system-ui, -apple-system, sans-serif";
 const SF_TEXT = "SF Pro Text, system-ui, -apple-system, sans-serif";
@@ -22,6 +22,7 @@ function formatVndFromNumber(value) {
 
 export default function Cart() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
 
   const [cartItems, setCartItems] = useState([]);
   const [loadingCart, setLoadingCart] = useState(false);
@@ -168,6 +169,17 @@ export default function Cart() {
     },
     [updateQuantityOnServer],
   );
+
+  // ─── Handler: Navigate to Checkout with cart data ───
+  const handleCheckout = useCallback(() => {
+    if (cartItems.length === 0) return;
+    navigate("/checkout", {
+      state: {
+        cartItems,
+        cartTotal,
+      },
+    });
+  }, [cartItems, cartTotal, navigate]);
 
   // ─── Handler: Remove item (optimistic UI) ───
   const handleRemoveItem = useCallback(
@@ -350,13 +362,15 @@ export default function Cart() {
               </div>
 
               <div className="mt-4 flex justify-end">
-                <Link
-                  to="/checkout"
-                  className="w-full sm:w-auto bg-[#0066cc] text-[#ffffff] px-[28px] py-[14px] rounded-full text-[18px] font-normal hover:bg-[#0071e3] active:scale-95 transition-all"
+                <button
+                  type="button"
+                  onClick={handleCheckout}
+                  className="w-full sm:w-auto bg-[#0066cc] text-[#ffffff] px-[28px] py-[14px] rounded-full text-[18px] font-normal hover:bg-[#0071e3] active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                   aria-label="Check out your bag"
+                  disabled={cartItems.length === 0}
                 >
                   Check Out
-                </Link>
+                </button>
               </div>
             </div>
           </>

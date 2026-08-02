@@ -1,6 +1,6 @@
 import React from "react";
 import { useSearchParams } from "react-router-dom";
-import Loading from "../components/Loading";
+import Loading from "../components/loading";
 
 const SF_DISPLAY = "SF Pro Display, system-ui, -apple-system, sans-serif";
 const SF_TEXT = "SF Pro Text, system-ui, -apple-system, sans-serif";
@@ -28,7 +28,7 @@ function ProductCard({ p }) {
     >
       <div className="w-full">
         <img
-          src={p.image ? p.image : "/src/assets/product.jpg"}
+          src={`../src/assets/${p.image}`}
           alt={p.name}
           className="w-full h-[240px] sm:h-[260px] lg:h-[280px] object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
           style={{
@@ -139,7 +139,7 @@ export default function Products() {
             firstImage?.image_url ||
             firstImage?.url ||
             firstImage?.path ||
-            null;
+            "";
 
           const productId = p.id ?? p._id;
 
