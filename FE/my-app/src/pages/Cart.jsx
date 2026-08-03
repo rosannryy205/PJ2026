@@ -155,6 +155,8 @@ export default function Cart() {
           variantId: item.id,
           quantity: nextQty,
         });
+        // Báo cho Header cập nhật lại badge số lượng giỏ hàng
+        window.dispatchEvent(new Event("cart:updated"));
       } catch (e) {
         // Rollback nếu server lỗi
         setCartItems((prev) =>
@@ -191,6 +193,8 @@ export default function Cart() {
 
       try {
         await removeItemOnServer({ variantId: item.id });
+        // Báo cho Header cập nhật lại badge số lượng giỏ hàng
+        window.dispatchEvent(new Event("cart:updated"));
       } catch (e) {
         // Rollback: thêm item lại
         setCartItems((prev) => [...prev, item]);

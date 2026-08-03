@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
+import Notification from "../components/Notification";
 import { useAuth } from "../contexts/authContext";
+import { useAuthModal } from "../contexts/authModalContext";
 
 const API_BASE_URL = "http://localhost:3000/"; // Cấu hình URL API backend
 
@@ -278,14 +280,43 @@ export default function Product_detail() {
   );
 
   const { isAuthenticated, loading: authLoading, refreshMe } = useAuth();
+  const { openLogin } = useAuthModal();
   const navigate = useNavigate();
 
   // Giỏ + lưu (UI)
   const [inCart, setInCart] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [cartError, setCartError] = useState(null);
 
-  const toggleSave = () => setSaved((s) => !s);
+  // Notification: thông báo khi cần đăng nhập / thành công / lỗi.
+  // Cấu trúc: { message, type, actionLabel, onAction } | null
+  const [notification, setNotification] = useState(null);
+
+  const closeNotification = () => setNotification(null);
+
+  const requireLogin = () =>
+    setNotification({
+      type: "warning",
+      message: "Bạn cần đăng nhập để tiếp tục.",
+      actionLabel: "Đăng nhập",
+      onAction: openLogin,
+    });
+
+  const toggleSave = () => {
+    // Chưa đăng nhập → yêu cầu đăng nhập.
+    if (!isAuthenticated) {
+      requireLogin();
+      return;
+    }
+
+    setSaved((s) => {
+      const next = !s;
+      setNotification({
+        type: "success",
+        message: next ? "Đã lưu sản phẩm." : "Đã bỏ lưu sản phẩm.",
+      });
+      return next;
+    });
+  };
 
   // Chống double-submit khi user double-click / request bị gọi lại do re-render.
   // Dùng ref để chặn ngay trong cùng tick (không phụ thuộc setState timing).
@@ -297,23 +328,36 @@ export default function Product_detail() {
   // - Nếu user chưa có cart => BE tự tạo cart
   // - Sau khi thêm => render lại dữ liệu cart ở Cart.jsx
   const handleAddToCart = async () => {
-    setCartError(null);
+    setNotification(null);
 
     // Chống double-submit (double-click / submit lại do re-render)
     if (isPostingRef.current) return;
     isPostingRef.current = true;
 
     // Nếu chưa xác định auth thì tránh gọi API
-    if (authLoading) return;
+    if (authLoading) {
+      isPostingRef.current = false;
+      return;
+    }
 
     // Bắt buộc đăng nhập
     if (!isAuthenticated) {
-      setCartError("Bạn cần đăng nhập để thêm vào giỏ.");
+      setNotification({
+        type: "warning",
+        message: "Bạn cần đăng nhập để tiếp tục.",
+        actionLabel: "Đăng nhập",
+        onAction: openLogin,
+      });
+      isPostingRef.current = false;
       return;
     }
 
     if (!selectedVariant?.id || !product?.id) {
-      setCartError("Vui lòng chọn biến thể sản phẩm hợp lệ.");
+      setNotification({
+        type: "error",
+        message: "Vui lòng chọn biến thể sản phẩm hợp lệ.",
+      });
+      isPostingRef.current = false;
       return;
     }
 
@@ -342,6 +386,9 @@ export default function Product_detail() {
       // Sync lại session user (tùy BE, nhưng giúp đảm bảo FE biết auth mới nhất)
       await refreshMe();
 
+      // Báo cho Header cập nhật lại badge số lượng giỏ hàng
+      window.dispatchEvent(new Event("cart:updated"));
+
       // Thành công => tắt trạng thái UI và điều hướng tới trang cart để render lại
       setTimeout(() => {
         setInCart(false);
@@ -350,7 +397,10 @@ export default function Product_detail() {
       }, 300);
       navigate("/cart");
     } catch (e) {
-      setCartError(e?.message || "Không thể thêm vào giỏ.");
+      setNotification({
+        type: "error",
+        message: e?.message || "Không thể thêm vào giỏ.",
+      });
       setTimeout(() => {
         setInCart(false);
         setIsPosting(false);
@@ -691,6 +741,16 @@ export default function Product_detail() {
           </div>
         </div>
       </div>
+
+      {/* Notification: hiển thị thông báo cần đăng nhập / thành công / lỗi */}
+      <Notification
+        isOpen={!!notification}
+        type={notification?.type ?? "success"}
+        message={notification?.message ?? ""}
+        actionLabel={notification?.actionLabel}
+        onAction={notification?.onAction}
+        onClose={closeNotification}
+      />
     </section>
   );
 }

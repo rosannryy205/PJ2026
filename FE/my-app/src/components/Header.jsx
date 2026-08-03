@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuthModal } from "../contexts/authModalContext";
 import { useAuth } from "../contexts/authContext";
 
@@ -321,6 +321,59 @@ export default function Header() {
   const [loadingCategories, setLoadingCategories] = React.useState(true); // Loading menu
   const [errorCategories, setErrorCategories] = React.useState(null); // Lỗi khi fetch menu
 
+  // Số lượng sản phẩm trong giỏ hàng (hiển thị badge trên icon giỏ hàng)
+  const [cartCount, setCartCount] = useState(0);
+  const location = useLocation();
+
+  /**
+   * fetchCartCount
+   * - Gọi GET /api/cart để lấy giỏ hàng thật của user (bắt buộc đăng nhập)
+   * - Tổng số lượng = tổng quantity của tất cả items trong giỏ
+   * - Nếu chưa đăng nhập / lỗi => giữ 0 (không hiện badge)
+   */
+  const fetchCartCount = useCallback(async () => {
+    if (!isAuthenticated) {
+      setCartCount(0);
+      return;
+    }
+
+    try {
+      const API_BASE_URL = "http://localhost:3000/api"; // Base URL backend
+      const res = await fetch(`${API_BASE_URL}/cart`, {
+        method: "GET",
+        credentials: "include", // gửi cookie httpOnly cho request xác thực
+      });
+
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+
+      const items = payload?.data?.items ?? [];
+      // Tổng số sản phẩm = tổng quantity của các item trong giỏ
+      const total = items.reduce(
+        (acc, it) => acc + Number(it.quantity ?? 0),
+        0,
+      );
+      setCartCount(total);
+    } catch (e) {
+      // Lỗi fetch (mạng, 401, 5xx...) => không hiện badge
+      setCartCount(0);
+    }
+  }, [isAuthenticated]);
+
+  // Fetch lại số lượng mỗi khi trạng thái auth hoặc đường dẫn thay đổi
+  useEffect(() => {
+    fetchCartCount();
+  }, [fetchCartCount, location.pathname]);
+
+  // Lắng nghe sự kiện "cart:updated" để cập nhật badge ngay khi
+  // các trang khác (productDetail, Cart...) thay đổi giỏ hàng.
+  useEffect(() => {
+    window.addEventListener("cart:updated", fetchCartCount);
+    return () => window.removeEventListener("cart:updated", fetchCartCount);
+  }, [fetchCartCount]);
+
   React.useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -481,9 +534,12 @@ export default function Header() {
                 aria-label="Giỏ hàng"
               >
                 <BagIcon />
-                <span className="absolute -top-[3px] -right-[5px] w-[14px] h-[14px] rounded-full bg-[#0066cc] text-white text-[9px] font-semibold flex items-center justify-center leading-none">
-                  3
-                </span>
+                {/* Badge hiển thị số lượng sản phẩm trong giỏ (chỉ hiện khi > 0) */}
+                {cartCount > 0 && (
+                  <span className="absolute -top-[3px] -right-[5px] w-[14px] h-[14px] rounded-full bg-[#0066cc] text-white text-[9px] font-semibold flex items-center justify-center leading-none">
+                    {cartCount > 99 ? "99+" : cartCount}
+                  </span>
+                )}
               </Link>
 
               {/* User — desktop only */}

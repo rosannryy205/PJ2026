@@ -1,7 +1,8 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthModalProvider } from "./contexts/authModalContext";
 import { AuthProvider } from "./contexts/authContext";
 import MainLayout from "./layouts/mainLayout";
+import AdminLayout from "./layouts/adminLayout";
 import Home from "./pages/Home";
 import Products from "./pages/Products";
 import Contact from "./pages/Contact";
@@ -10,6 +11,7 @@ import Cart from "./pages/Cart";
 import Check_out from "./pages/CheckOut";
 import User_profile from "./pages/userProfile";
 import OrderSuccess from "./pages/orderSuccess";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 
 function App() {
   return (
@@ -26,6 +28,18 @@ function App() {
               <Route path="checkout" element={<Check_out />} />
               <Route path="user_profile" element={<User_profile />} />
               <Route path="order-success" element={<OrderSuccess />} />
+            </Route>
+          </Routes>
+          <Routes>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route
+                index
+                element={<Navigate to="/admin/dashboard" replace />}
+              />
+              <Route path="dashboard" element={<AdminDashboard />} />
+              {/* Catch-all: giữ layout admin (header + footer + loading) cho
+                  mọi link admin chưa build body, tránh 404 trắng */}
+              <Route path="*" element={<AdminDashboard />} />
             </Route>
           </Routes>
         </BrowserRouter>
