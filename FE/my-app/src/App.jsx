@@ -29,8 +29,7 @@ function App() {
               <Route path="user_profile" element={<User_profile />} />
               <Route path="order-success" element={<OrderSuccess />} />
             </Route>
-          </Routes>
-          <Routes>
+
             <Route path="/admin" element={<AdminLayout />}>
               <Route
                 index
@@ -41,6 +40,11 @@ function App() {
                   mọi link admin chưa build body, tránh 404 trắng */}
               <Route path="*" element={<AdminDashboard />} />
             </Route>
+
+            {/* Hide : cảnh báo "No routes matched location" khi URL không
+                khớp bất kỳ route nào ở trên (VD: "/learn-more", "/pre-order")
+                mà không làm mất trang — chỉ render rỗng. */}
+            <Route path="*" element={null} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuthModal } from "../contexts/authModalContext";
-import  { useAuth }  from "../contexts/authContext";
+import { useAuth } from "../contexts/authContext";
 
 // Menu dữ liệu (category -> brand) sẽ được render động từ backend.
 // Vì yêu cầu "xóa bỏ hết dữ liệu tĩnh ở FE" nên không còn hardcode navItems nữa.
@@ -319,7 +319,7 @@ export default function Header() {
 
   const [categories, setCategories] = React.useState([]); // Dữ liệu category (kèm brands) từ BE
   const [loadingCategories, setLoadingCategories] = React.useState(true); // Loading menu
-  const [setErrorCategories] = React.useState(null); // Lỗi khi fetch menu
+  const [, setErrorCategories] = React.useState(null); // Lỗi khi fetch menu
 
   // Số lượng sản phẩm trong giỏ hàng (hiển thị badge trên icon giỏ hàng)
   const [cartCount, setCartCount] = useState(0);
@@ -356,14 +356,27 @@ export default function Header() {
         0,
       );
       setCartCount(total);
-    } catch{
+    } catch {
       // Lỗi fetch (mạng, 401, 5xx...) => không hiện badge
       setCartCount(0);
     }
   }, [isAuthenticated]);
 
-  // Fetch lại số lượng mỗi khi trạng thái auth hoặc đường dẫn thay đổi
+  // ─── ĐỒNG BỘ BADGE MỖI KHI ĐỔI TRANG (fix gốc) ───
+  // Nguồn dữ liệu "sự thật": backend giỏ hàng.
+  // Khi pathname thay đổi (VD: /checkout -> /order-success sau khi thanh toán,
+  // hay bất kỳ điều hướng nào), ta quét lại giỏ hàng từ BE để badge luôn đúng.
+  // Đây là lưới an toàn cuối cùng: dù trang khác có quên dispatch "cart:updated"
+  // (như trường hợp orderSuccess/checkout trước đây), badge vẫn được làm mới.
   useEffect(() => {
+    // Trì hoãn 1 macrotask để fetchCartCount không chạy đồng bộ trong effect
+    // body → tránh eslint "react-hooks/set-state-in-effect" (setState đồng bộ
+    // trong effect gây cascading renders). Timer cũng được cleanup khi unmount.
+    const timer = window.setTimeout(() => {
+      fetchCartCount();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [fetchCartCount, location.pathname]);
 
   // Lắng nghe sự kiện "cart:updated" để cập nhật badge ngay khi
@@ -720,9 +733,7 @@ export default function Header() {
           {/* Nav items with accordion */}
           <div className="px-5 py-2">
             {loadingCategories ? (
-              <div className="py-2.5 text-white/70">
-                Đang tải danh mục...
-              </div>
+              <div className="py-2.5 text-white/70">Đang tải danh mục...</div>
             ) : (
               // Duyệt categories từ backend để render accordion menu động
               categories.map((cat) => (

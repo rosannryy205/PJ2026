@@ -240,7 +240,7 @@ export default function OrderSuccess() {
           style={{ animationDelay: "400ms" }}
         >
           <Link
-            to="/products"
+            to="/"
             className="inline-flex items-center justify-center bg-[#0066cc] text-[#ffffff] px-7 py-3.5 rounded-full text-[18px] font-normal hover:bg-[#0071e3] active:scale-95 transition-all"
           >
             Continue Shopping

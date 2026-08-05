@@ -97,6 +97,14 @@ export default function Check_out() {
         throw new Error(payload?.message || `HTTP ${res.status}`);
       }
 
+      // ─── Thành công → cập nhật badge giỏ hàng ngay ───
+      // Backend vừa xóa toàn bộ cart_items của user trong transaction.
+      // Dispatch "cart:updated" để Header (badge) quét lại giỏ hàng → về 0.
+      // Pattern này nhất quán với cart.jsx (đổi số lượng / xóa item).
+      // (Lớp an toàn thứ 2: header cũng tự refetch khi pathname đổi sang
+      // /order-success, nên badge luôn được đồng bộ dù event bị bỏ sót.)
+      window.dispatchEvent(new Event("cart:updated"));
+
       // Thành công → navigate sang trang Order Success
       navigate("/order-success", {
         state: { order: payload.data },

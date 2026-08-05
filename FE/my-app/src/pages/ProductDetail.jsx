@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import Notification from "../components/Notification";
+import { CommentSection } from "../components/comments";
 import { useAuth } from "../contexts/authContext";
 import { useAuthModal } from "../contexts/authModalContext";
 
@@ -281,7 +282,7 @@ export default function Product_detail() {
     [],
   );
 
-  const { isAuthenticated, loading: authLoading, refreshMe } = useAuth();
+  const { user, isAuthenticated, loading: authLoading, refreshMe } = useAuth();
   const { openLogin } = useAuthModal();
   const navigate = useNavigate();
 
@@ -450,10 +451,7 @@ export default function Product_detail() {
       }}
     >
       {/* SECTION 1: Ảnh + Thông tin */}
-      <div
-        className="min-h-svh bg-[#ffffff]"
-        style={{ overflow: "hidden" }}
-      >
+      <div className="min-h-svh bg-[#ffffff]" style={{ overflow: "hidden" }}>
         <div className="w-full mx-auto px-4 sm:px-6 lg:px-10 pt-8 sm:pt-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 items-start gap-8 lg:gap-10">
             <div className="w-full" aria-label="Ảnh sản phẩm">
@@ -639,7 +637,19 @@ export default function Product_detail() {
         </div>
       </div>
 
-      {/* SECTION 3: Liên quan */}
+      {/* SECTION 3: Bình luận sản phẩm */}
+      <div className="bg-[#ffffff] border-t border-[#e0e0e0]">
+        <div className="w-full mx-auto px-4 sm:px-6 lg:px-10 py-16">
+          <CommentSection
+            productId={productIdFromQuery}
+            isAuthenticated={isAuthenticated}
+            user={user}
+            onRequireLogin={requireLogin}
+          />
+        </div>
+      </div>
+
+      {/* SECTION 4: Liên quan */}
       <div className="bg-[#ffffff]">
         <div className="w-full mx-auto px-4 sm:px-6 lg:px-10 py-16">
           <div className="flex items-end justify-between gap-6">
