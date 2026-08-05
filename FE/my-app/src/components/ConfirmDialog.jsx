@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback } from "react";
 
 const SF_DISPLAY = "SF Pro Display, system-ui, -apple-system, sans-serif";
 const SF_TEXT = "SF Pro Text, system-ui, -apple-system, sans-serif";
@@ -69,7 +69,7 @@ export default function ConfirmDialog({
       ref={overlayRef}
       onClick={handleBackdropClick}
       className={[
-        "fixed inset-0 z-[200] flex items-center justify-center px-4",
+        "fixed inset-0 z-200 flex items-center justify-center px-4",
         "transition-all duration-300 ease-out",
         isOpen
           ? "opacity-100 pointer-events-auto"
@@ -89,7 +89,7 @@ export default function ConfirmDialog({
       <div
         className={[
           "relative w-full",
-          "max-w-[380px]",
+          "max-w-95",
           "bg-[#ffffff] rounded-[18px]",
           "shadow-[0_24px_48px_rgba(0,0,0,0.20)]",
           "transition-all duration-300 ease-out",
@@ -103,7 +103,7 @@ export default function ConfirmDialog({
           {/* Icon */}
           <div
             className={[
-              "mx-auto w-[52px] h-[52px] rounded-full flex items-center justify-center mb-5",
+              "mx-auto w-13 h-13 rounded-full flex items-center justify-center mb-5",
               isDanger ? "bg-[#fff0f0]" : "bg-[#e8f4ff]",
             ].join(" ")}
           >
@@ -152,7 +152,7 @@ export default function ConfirmDialog({
 
           {/* Message */}
           {message && (
-            <p className="text-[15px] leading-[1.47] tracking-[-0.374px] text-[#7a7a7a] mb-0 max-w-[300px] mx-auto">
+            <p className="text-[15px] leading-[1.47] tracking-[-0.374px] text-[#7a7a7a] mb-0 max-w-75 mx-auto">
               {message}
             </p>
           )}
@@ -169,7 +169,7 @@ export default function ConfirmDialog({
             onClick={onCancel}
             disabled={loading}
             className={[
-              "px-[22px] py-[11px] rounded-full text-[17px] font-normal",
+              "px-5.5 py-2.75 rounded-full text-[17px] font-normal",
               "border border-[#e0e0e0] bg-[#ffffff] text-[#1d1d1f]",
               "hover:bg-[#f5f5f7]",
               "active:scale-95 transition-all",
@@ -187,7 +187,7 @@ export default function ConfirmDialog({
             onClick={onConfirm}
             disabled={loading}
             className={[
-              "px-[22px] py-[11px] rounded-full text-[17px] font-normal",
+              "px-5.5 py-2.75 rounded-full text-[17px] font-normal",
               "text-[#ffffff]",
               isDanger
                 ? "bg-[#e30000] hover:bg-[#cc0000]"

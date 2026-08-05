@@ -1,6 +1,6 @@
-import React from "react";
+
 import { useLocation, useNavigate, Link } from "react-router-dom";
-import Loading from "../components/loading";
+
 
 const SF_DISPLAY = "SF Pro Display, system-ui, -apple-system, sans-serif";
 const SF_TEXT = "SF Pro Text, system-ui, -apple-system, sans-serif";
@@ -40,7 +40,7 @@ export default function OrderSuccess() {
       className="w-full min-h-screen bg-[#ffffff] text-[#1d1d1f]"
       style={{ fontFamily: SF_TEXT }}
     >
-      <div className="max-w-[700px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+      <div className="max-w-175 mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
         {/* ─── Success animation / icon ─── */}
         <div className="flex justify-center mb-8 fade-in-up">
           <div className="w-20 h-20 rounded-full bg-[#f5f5f7] flex items-center justify-center">
@@ -241,13 +241,13 @@ export default function OrderSuccess() {
         >
           <Link
             to="/products"
-            className="inline-flex items-center justify-center bg-[#0066cc] text-[#ffffff] px-[28px] py-[14px] rounded-full text-[18px] font-normal hover:bg-[#0071e3] active:scale-95 transition-all"
+            className="inline-flex items-center justify-center bg-[#0066cc] text-[#ffffff] px-7 py-3.5 rounded-full text-[18px] font-normal hover:bg-[#0071e3] active:scale-95 transition-all"
           >
             Continue Shopping
           </Link>
           <Link
             to="/"
-            className="inline-flex items-center justify-center bg-[#ffffff] text-[#0066cc] px-[28px] py-[14px] rounded-full text-[18px] font-normal border border-[#0066cc] hover:bg-[#f5f5f7] active:scale-95 transition-all"
+            className="inline-flex items-center justify-center bg-[#ffffff] text-[#0066cc] px-7 py-3.5 rounded-full text-[18px] font-normal border border-[#0066cc] hover:bg-[#f5f5f7] active:scale-95 transition-all"
           >
             Back to Home
           </Link>

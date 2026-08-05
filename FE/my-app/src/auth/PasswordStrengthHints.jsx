@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 
 const SF_TEXT = "SF Pro Text, system-ui, -apple-system, sans-serif";
 
@@ -7,7 +7,7 @@ function ruleState({ label, satisfied }) {
     <li className="flex items-start gap-2">
       <span
         className={[
-          "mt-[2px] shrink-0 w-[14px] h-[14px] rounded-full",
+          "mt-0.5 shrink-0 w-3.5 h-3.5 rounded-full",
           satisfied ? "bg-[#0066cc]" : "bg-[#e0e0e0]",
         ].join(" ")}
         aria-hidden="true"

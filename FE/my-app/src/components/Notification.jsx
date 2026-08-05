@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * Notification
@@ -162,8 +162,10 @@ export default function Notification({
     }
 
     // Khi isOpen = false: reset mounted để ẩn notification.
-    setMounted(false);
-  }, [isOpen, duration, message]);
+    // Avoid calling setState synchronously inside effect — schedule it next frame.
+    const raf = requestAnimationFrame(() => setMounted(false));
+    return () => cancelAnimationFrame(raf);
+  }, [isOpen, duration, message, onClose]);
 
   // Cleanup timer khi unmount.
   useEffect(() => {
@@ -194,7 +196,7 @@ export default function Notification({
       role="alert"
       aria-live="polite"
       className={[
-        "fixed z-[120]",
+        "fixed z-120",
         // Mobile: bottom-center, full-width có padding.
         "bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-auto",
         // Tablet/Desktop: top-right.
@@ -205,7 +207,7 @@ export default function Notification({
       <div
         className={[
           "pointer-events-auto",
-          "w-full sm:w-auto sm:max-w-[400px]",
+          "w-full sm:w-auto sm:max-w-100",
           "bg-white border border-[#e0e0e0] rounded-[11px]",
           "px-4 py-3 sm:px-5 sm:py-4",
           "flex items-start gap-3",
@@ -222,7 +224,7 @@ export default function Notification({
         }}
       >
         {/* Icon */}
-        <div className="mt-[2px] shrink-0">{meta.icon}</div>
+        <div className="mt-0.5 shrink-0">{meta.icon}</div>
 
         {/* Nội dung */}
         <div className="flex-1 min-w-0">
@@ -249,7 +251,7 @@ export default function Notification({
           type="button"
           onClick={handleClose}
           aria-label="Đóng thông báo"
-          className="shrink-0 w-[24px] h-[24px] flex items-center justify-center rounded-full text-[#7a7a7a] hover:text-[#1d1d1f] hover:bg-[#f5f5f7] transition-colors bg-transparent border-none outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2"
+          className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-[#7a7a7a] hover:text-[#1d1d1f] hover:bg-[#f5f5f7] transition-colors bg-transparent border-none outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2"
         >
           <CloseIcon />
         </button>

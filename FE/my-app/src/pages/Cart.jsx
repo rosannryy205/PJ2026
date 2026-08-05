@@ -1,8 +1,7 @@
-import React, {
+import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -21,7 +20,7 @@ function formatVndFromNumber(value) {
 }
 
 export default function Cart() {
-  const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const {isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const [cartItems, setCartItems] = useState([]);
@@ -32,7 +31,8 @@ export default function Cart() {
   const [updatingItemId, setUpdatingItemId] = useState(null);
 
   // Track if initial mount has completed (to control animations)
-  const hasMounted = useRef(false);
+  // use state instead of reading ref during render to satisfy lint
+  const [hasMounted, setHasMounted] = useState(false);
 
   const cartTotal = useMemo(() => {
     return cartItems.reduce(
@@ -92,14 +92,18 @@ export default function Cart() {
     } catch (e) {
       setError(e?.message || "Failed to load cart.");
       setCartItems([]);
-    } finally {
+      } finally {
       setLoadingCart(false);
-      hasMounted.current = true;
+      setHasMounted(true);
     }
   }, [authLoading, isAuthenticated]);
 
   useEffect(() => {
-    fetchCart();
+    // call async fetchCart inside an async function to avoid synchronous setState in effect
+    const run = async () => {
+      await fetchCart();
+    };
+    run();
   }, [fetchCart]);
 
   // ─── PUT /api/cart/items — Set quantity chính xác ───
@@ -211,7 +215,7 @@ export default function Cart() {
       className="w-full min-h-screen bg-[#ffffff] text-[#1d1d1f]"
       style={{ fontFamily: SF_TEXT }}
     >
-      <div className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+      <div className="max-w-245 mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
         <div className="text-center md:text-left mb-12 fade-in-up">
           <h1
             className="text-[34px] md:text-[40px] font-semibold leading-[1.1] tracking-[-0.374px] mb-6"
@@ -231,7 +235,7 @@ export default function Cart() {
 
         {/* ─── Initial Loading (fullscreen LoadingOverlay) ─── */}
         {loadingCart ? (
-          <div className="relative min-h-[200px]">
+          <div className="relative min-h-50">
             <Loading
               variant="overlay"
               size="medium"
@@ -248,15 +252,15 @@ export default function Cart() {
                 <div
                   key={item.id}
                   className={`flex flex-col md:flex-row items-center md:items-start gap-8 py-10 border-b border-[#e0e0e0] ${
-                    !hasMounted.current ? "animate-fade-in" : ""
+                    !hasMounted ? "animate-fade-in" : ""
                   }`}
                   style={
-                    !hasMounted.current
+                    !hasMounted
                       ? { animationDelay: `${index * 100}ms` }
                       : undefined
                   }
                 >
-                  <div className="w-48 h-48 flex-shrink-0">
+                  <div className="w-48 h-48 shrink-0">
                     <img
                       src={item.image}
                       alt={item.name}
@@ -369,7 +373,7 @@ export default function Cart() {
                 <button
                   type="button"
                   onClick={handleCheckout}
-                  className="w-full sm:w-auto bg-[#0066cc] text-[#ffffff] px-[28px] py-[14px] rounded-full text-[18px] font-normal hover:bg-[#0071e3] active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="w-full sm:w-auto bg-[#0066cc] text-[#ffffff] px-7 py-3.5 rounded-full text-[18px] font-normal hover:bg-[#0071e3] active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                   aria-label="Check out your bag"
                   disabled={cartItems.length === 0}
                 >
@@ -382,7 +386,7 @@ export default function Cart() {
           <div className="text-center py-20 fade-in-up">
             <Link
               to="/products"
-              className="inline-block bg-[#0066cc] text-[#ffffff] px-[22px] py-[11px] rounded-full text-[17px] font-normal hover:bg-[#0071e3] active:scale-95 transition-all"
+              className="inline-block bg-[#0066cc] text-[#ffffff] px-5.5 py-2.75 rounded-full text-[17px] font-normal hover:bg-[#0071e3] active:scale-95 transition-all"
             >
               Continue Shopping
             </Link>

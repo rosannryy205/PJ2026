@@ -1,4 +1,5 @@
 import Banner from "../components/Banner";
+import Loading from "../components/loading";
 import React from "react";
 
 const SF_DISPLAY = "SF Pro Display, system-ui, -apple-system, sans-serif";
@@ -90,8 +91,8 @@ function ProductGridSection({
           isActive ? "opacity-100 translate-y-0" : "opacity-90 translate-y-2",
         ].join(" ")}
       >
-        <div className={`mx-auto max-w-[1440px] ${productTileBase}`}>
-          <div className="max-w-[980px] mx-auto mb-10 lg:mb-12">
+        <div className={`mx-auto max-w-360 ${productTileBase}`}>
+          <div className="max-w-245 mx-auto mb-10 lg:mb-12">
             <div
               className={`flex flex-col ${alignClass} gap-3`}
               style={{ fontFamily: SF_DISPLAY }}
@@ -133,7 +134,7 @@ function ProductGridSection({
                 "grid gap-6 sm:gap-8",
                 "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
                 // Không cho wrap khi cuộn ngang
-                "min-w-[100%]",
+                "min-w-full",
               ].join(" ")}
             >
               {items_product.map((p) => (
@@ -158,7 +159,7 @@ function ProductGridSection({
                     <img
                       src={`../src/assets/${p.image}`}
                       alt={p.name}
-                      className="w-full h-[240px] sm:h-[260px] lg:h-[280px] object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
+                      className="w-full h-60 sm:h-65 lg:h-70 object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
                       style={{
                         boxShadow: "rgba(0, 0, 0, 0.22) 3px 5px 30px 0",
                         borderRadius: 18,
@@ -176,7 +177,7 @@ function ProductGridSection({
                     </h3>
                     <p
                       title={p.tagline}
-                      className="w-full min-w-0 mt-2 text-[17px] leading-[1.47] tracking-[-0.374px] line-clamp-2 h-[50px] overflow-hidden text-ellipsis"
+                      className="w-full min-w-0 mt-2 text-[17px] leading-[1.47] tracking-[-0.374px] line-clamp-2 h-12.5 overflow-hidden text-ellipsis"
                       style={{
                         fontFamily: SF_TEXT,
                         fontWeight: 400,
@@ -189,7 +190,7 @@ function ProductGridSection({
                     <div className="mt-6">
                       <a
                         href={p.href}
-                        className="inline-flex items-center justify-center rounded-full bg-[#0066cc] text-white text-[18px] font-light leading-none px-[28px] py-[14px] hover:bg-[#0071e3] active:scale-95 transition-all no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2"
+                        className="inline-flex items-center justify-center rounded-full bg-[#0066cc] text-white text-[18px] font-light leading-none px-7 py-3.5 hover:bg-[#0071e3] active:scale-95 transition-all no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2"
                         style={{ fontFamily: SF_TEXT }}
                         aria-label={`Xem ${p.name}`}
                       >
@@ -232,8 +233,8 @@ function HighlightSection() {
 
   return (
     <section className="w-full" style={{ backgroundColor: "#f5f5f7" }}>
-      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-10 py-16 lg:py-20">
-        <div className="max-w-[980px] mx-auto text-center mb-10 lg:mb-12">
+      <div className="mx-auto max-w-360 px-4 sm:px-6 lg:px-10 py-16 lg:py-20">
+        <div className="max-w-245 mx-auto text-center mb-10 lg:mb-12">
           <h2
             className="text-[28px] md:text-[34px] lg:text-[40px] font-semibold leading-[1.1] tracking-[-0.374px] text-[#1d1d1f]"
             style={{ fontFamily: SF_DISPLAY }}
@@ -252,7 +253,7 @@ function HighlightSection() {
         {/* Highlight block: ~80% viewport, centered, background image fills full box */}
         <div className="flex justify-center">
           <article
-            className="relative overflow-hidden w-[92vw] max-w-[980px] h-[80vh] max-h-[520px]"
+            className="relative overflow-hidden w-[92vw] max-w-245 h-[80vh] max-h-130"
             style={{ borderRadius: 0 }}
           >
             {/* Product/image background */}
@@ -272,7 +273,7 @@ function HighlightSection() {
               className="absolute inset-0 flex items-center justify-center"
               style={{ backgroundColor: "rgba(245, 245, 247, 0.25)" }}
             >
-              <div className="text-center px-4 sm:px-6 lg:px-10 max-w-[720px]">
+              <div className="text-center px-4 sm:px-6 lg:px-10 max-w-180">
                 <h3
                   className="text-[#1d1d1f] text-[28px] md:text-[34px] font-semibold leading-[1.1] tracking-[-0.374px]"
                   style={{ fontFamily: SF_DISPLAY }}
@@ -290,7 +291,7 @@ function HighlightSection() {
                 <div className="mt-8">
                   <a
                     href={banner.href}
-                    className="inline-flex items-center justify-center rounded-full bg-[#0066cc] text-white text-[18px] font-light leading-none px-[28px] py-[14px] hover:bg-[#0071e3] active:scale-95 transition-all no-underline"
+                    className="inline-flex items-center justify-center rounded-full bg-[#0066cc] text-white text-[18px] font-light leading-none px-7 py-3.5 hover:bg-[#0071e3] active:scale-95 transition-all no-underline"
                     style={{ fontFamily: SF_TEXT }}
                   >
                     {banner.cta}
@@ -336,7 +337,9 @@ export default function Home() {
           name: p.name,
           tagline,
           image,
-          href: productId ? `/product_detail?id=${productId}` : "/product_detail",
+          href: productId
+            ? `/product_detail?id=${productId}`
+            : "/product_detail",
           cta: "Xem chi tiết",
         };
       });
@@ -353,9 +356,12 @@ export default function Home() {
           fetch(`${API_BASE_URL}/products/popular`),
         ]);
 
-        if (!resNewArrivals.ok) throw new Error(`HTTP newarrival ${resNewArrivals.status}`);
-        if (!resFeatures.ok) throw new Error(`HTTP features ${resFeatures.status}`);
-        if (!resPopular.ok) throw new Error(`HTTP popular ${resPopular.status}`);
+        if (!resNewArrivals.ok)
+          throw new Error(`HTTP newarrival ${resNewArrivals.status}`);
+        if (!resFeatures.ok)
+          throw new Error(`HTTP features ${resFeatures.status}`);
+        if (!resPopular.ok)
+          throw new Error(`HTTP popular ${resPopular.status}`);
 
         const [jsonNewArrivals, jsonFeatures, jsonPopular] = await Promise.all([
           resNewArrivals.json(),
@@ -370,7 +376,7 @@ export default function Home() {
         setNewArrivals(mapProductsForHome(newArrivalProducts));
         setFeatured(mapProductsForHome(featuresProducts));
         setPopular(mapProductsForHome(popularProducts));
-      } catch (err) {
+      } catch {
         setError("Error fetching product data.");
         setNewArrivals([]);
         setFeatured([]);
@@ -383,7 +389,23 @@ export default function Home() {
     fetchData();
   }, []);
 
-
+  if (loading) {
+    return (
+      <section
+        className="w-full"
+        style={{ fontFamily: SF_TEXT, position: "relative", minHeight: 300 }}
+      >
+        <Loading
+          variant="fullscreen"
+          size="medium"
+          text="Loading..."
+          shouldShow={true}
+          minDurationMs={1000}
+          maxDurationMs={3000}
+        />
+      </section>
+    );
+  }
 
   return (
     <main className="w-full">

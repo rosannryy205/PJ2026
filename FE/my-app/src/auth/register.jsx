@@ -295,8 +295,8 @@ export default function Register() {
                 "mt-3",
                 "transition-all duration-250 ease-out",
                 showPasswordRules
-                  ? "opacity-100 translate-y-0 max-h-[240px]"
-                  : "opacity-0 translate-y-[-6px] max-h-0 overflow-hidden",
+                  ? "opacity-100 translate-y-0 max-h-60"
+                  : "opacity-0 -translate-y-1.5 max-h-0 overflow-hidden",
               ].join(" ")}
             >
               <PasswordStrengthHints password={password} />
@@ -389,7 +389,7 @@ export default function Register() {
                 }}
                 disabled={sendCodeLoading || sendCodeCooldownSec > 0}
                 className={[
-                  "shrink-0 h-[44px] px-4 rounded-[8px] text-[14px] font-normal tracking-[-0.224px] border-none transition-all duration-200",
+                  "shrink-0 h-11 px-4 rounded-lg text-[14px] font-normal tracking-[-0.224px] border-none transition-all duration-200",
                   "cursor-pointer active:scale-[0.95]",
                   sendCodeLoading || sendCodeCooldownSec > 0
                     ? "bg-[#1d1d1f]/70 text-white/90 cursor-not-allowed"
@@ -409,7 +409,7 @@ export default function Register() {
           {/* Submit */}
           <button
             type="submit"
-            className="mt-2 w-full h-[44px] rounded-full bg-[#0066cc] text-white text-[17px] font-normal tracking-[-0.374px] leading-[1.47] border-none cursor-pointer hover:bg-[#0071e3] active:scale-[0.95] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2"
+            className="mt-2 w-full h-11 rounded-full bg-[#0066cc] text-white text-[17px] font-normal tracking-[-0.374px] leading-[1.47] border-none cursor-pointer hover:bg-[#0071e3] active:scale-[0.95] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2"
             style={{ fontFamily: SF_TEXT }}
           >
             Register

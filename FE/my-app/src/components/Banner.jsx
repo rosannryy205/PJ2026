@@ -78,24 +78,24 @@ export default function Banner() {
           {slides.map((slide) => (
             <div 
               key={slide.id} 
-              className="w-full flex-shrink-0 flex flex-col items-center justify-center text-center relative px-4 sm:px-6 lg:px-10 min-h-[500px] md:min-h-[700px] py-24"
+              className="w-full shrink-0 flex flex-col items-center justify-center text-center relative px-4 sm:px-6 lg:px-10 min-h-125 md:min-h-175 py-24"
             >
               {/* Background Image */}
               <div className="absolute inset-0 z-0 p-4 sm:p-6 lg:p-8">
-                <div className="relative w-full h-full overflow-hidden rounded-[32px] shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
+                <div className="relative w-full h-full overflow-hidden rounded-4 shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
                   <img 
                     src={slide.image} 
                     alt="Banner" 
                     className="w-full h-full object-cover transition-transform duration-1000 hover:scale-105"
                   />
                   {/* Overlay để text luôn dễ đọc trên nền ảnh */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80"></div>
+                  <div className="absolute inset-0 bg-linear-to-b from-black/60 via-black/40 to-black/80"></div>
                 </div>
               </div>
 
               {/* Content Box */}
               <div 
-                className={`w-full max-w-[1440px] mx-auto flex flex-col items-center z-10 transition-all duration-700 delay-200 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                className={`w-full max-w-360 mx-auto flex flex-col items-center z-10 transition-all duration-700 delay-200 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
               >
                 {/* Eyebrow */}
                 <span className="text-[#2997ff] text-[14px] font-semibold tracking-[-0.224px] uppercase mb-4">
@@ -104,14 +104,14 @@ export default function Banner() {
 
                 {/* Hero Headline */}
                 <h1 
-                  className="text-white text-[40px] md:text-[56px] font-semibold leading-[1.1] md:leading-[1.07] tracking-[0px] md:tracking-[-0.28px] mb-4 max-w-[800px]"
+                  className="text-white text-[40px] md:text-[56px] font-semibold leading-[1.1] md:leading-[1.07] tracking-normal md:tracking-[-0.28px] mb-4 max-w-200"
                   style={{ fontFamily: "SF Pro Display, system-ui, -apple-system, sans-serif" }}
                   dangerouslySetInnerHTML={{ __html: slide.headline }}
                 />
 
                 {/* Subhead */}
                 <p 
-                  className="text-[#cccccc] text-[21px] md:text-[28px] font-normal leading-[1.19] md:leading-[1.14] tracking-[0.231px] md:tracking-[0.196px] mb-8 max-w-[600px]"
+                  className="text-[#cccccc] text-[21px] md:text-[28px] font-normal leading-[1.19] md:leading-[1.14] tracking-[0.231px] md:tracking-[0.196px] mb-8 max-w-150"
                   style={{ fontFamily: "SF Pro Display, system-ui, -apple-system, sans-serif" }}
                 >
                   {slide.subhead}
@@ -121,7 +121,7 @@ export default function Banner() {
                 <div className="flex flex-col sm:flex-row items-center gap-6 mb-16">
                   <Link 
                     to={slide.primaryCta.link}
-                    className="inline-flex items-center justify-center rounded-full bg-[#0066cc] text-white text-[18px] font-light leading-none px-[28px] py-[14px] hover:bg-[#0071e3] active:scale-95 transition-all no-underline"
+                    className="inline-flex items-center justify-center rounded-full bg-[#0066cc] text-white text-[18px] font-light leading-none px-7 py-3.5 hover:bg-[#0071e3] active:scale-95 transition-all no-underline"
                   >
                     {slide.primaryCta.label}
                   </Link>
@@ -147,8 +147,8 @@ export default function Banner() {
               key={index}
               onClick={() => setCurrentSlide(index)}
               aria-label={`Go to slide ${index + 1}`}
-              className={`h-[8px] rounded-full transition-all duration-300 ease-out cursor-pointer outline-none ${
-                currentSlide === index ? 'w-[24px] bg-white' : 'w-[8px] bg-[rgba(255,255,255,0.3)] hover:bg-[rgba(255,255,255,0.6)]'
+              className={`h-2 rounded-full transition-all duration-300 ease-out cursor-pointer outline-none ${
+                currentSlide === index ? 'w-6 bg-white' : 'w-2 bg-[rgba(255,255,255,0.3)] hover:bg-[rgba(255,255,255,0.6)]'
               }`}
             />
           ))}
@@ -157,8 +157,8 @@ export default function Banner() {
 
       {/* ─── TRUST INDICATORS BAR ─── */}
       {/* Đặt ra ngoài khu vực trượt để cố định trên mọi slide */}
-      <div className="hidden md:block bg-[#252527] w-full relative z-20 mt-[-2px]">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-8">
+      <div className="hidden md:block bg-[#252527] w-full relative z-20 -mt-0.5">
+        <div className="max-w-360 mx-auto px-4 sm:px-6 lg:px-10 py-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-[rgba(255,255,255,0.08)]">
             
             {/* Indicator 1 */}

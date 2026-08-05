@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/authContext";
 import Loading from "../components/loading";
@@ -73,7 +73,7 @@ export default function UserProfile() {
 
   // Orders state
   const [orders, setOrders] = useState([]);
-  const [loadingOrders, setLoadingOrders] = useState(false);
+  const [loadingOrders, setLoadingOrders] = useState(true);
   const [ordersError, setOrdersError] = useState(null);
 
   // Cancel state
@@ -84,20 +84,20 @@ export default function UserProfile() {
   const [pendingCancelId, setPendingCancelId] = useState(null);
 
   // Profile form state (Settings tab)
-  const [formName, setFormName] = useState("");
-  const [formPhone, setFormPhone] = useState("");
-  const [formAddress, setFormAddress] = useState("");
+  const [formName, setFormName] = useState(user?.name || "");
+  const [formPhone, setFormPhone] = useState(user?.phone || "");
+  const [formAddress, setFormAddress] = useState(user?.address || "");
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState(null); // { type: 'success' | 'error', text }
 
-  // ─── Init form when user data loads ───
-  useEffect(() => {
-    if (user) {
-      setFormName(user.name || "");
-      setFormPhone(user.phone || "");
-      setFormAddress(user.address || "");
-    }
-  }, [user]);
+  // ─── Adjust form state when user data loads (during render) ───
+  const [prevUser, setPrevUser] = useState(user);
+  if (prevUser !== user) {
+    setPrevUser(user);
+    setFormName(user?.name || "");
+    setFormPhone(user?.phone || "");
+    setFormAddress(user?.address || "");
+  }
 
   // ─── Redirect if not authenticated ───
   useEffect(() => {
@@ -110,8 +110,6 @@ export default function UserProfile() {
   const fetchOrders = useCallback(async () => {
     if (authLoading || !isAuthenticated) return;
     try {
-      setLoadingOrders(true);
-      setOrdersError(null);
       const res = await fetch(`${API_BASE_URL}/api/orders/my-orders`, {
         method: "GET",
         credentials: "include",
@@ -127,12 +125,39 @@ export default function UserProfile() {
     }
   }, [authLoading, isAuthenticated]);
 
-  // ─── Fetch orders when tab switches to "orders" or "dashboard" ───
+  // ─── Fetch orders on mount (setState in promise callbacks only) ───
   useEffect(() => {
-    if (activeTab === "orders" || activeTab === "dashboard") {
+    if (authLoading || !isAuthenticated) return;
+    let ignore = false;
+    fetch(`${API_BASE_URL}/api/orders/my-orders`, {
+      method: "GET",
+      credentials: "include",
+    })
+      .then(async (res) => {
+        const payload = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(payload?.message || `HTTP ${res.status}`);
+        if (!ignore) setOrders(payload?.data || []);
+      })
+      .catch((e) => {
+        if (!ignore) setOrdersError(e?.message || "Failed to load orders.");
+      })
+      .finally(() => {
+        if (!ignore) setLoadingOrders(false);
+      });
+    return () => {
+      ignore = true;
+    };
+  }, [authLoading, isAuthenticated]);
+
+  // ─── Tab change handler (fetch orders outside effect) ───
+  const handleTabChange = (nextTab) => {
+    setActiveTab(nextTab);
+    if (nextTab === "orders" || nextTab === "dashboard") {
+      setLoadingOrders(true);
+      setOrdersError(null);
       fetchOrders();
     }
-  }, [activeTab, fetchOrders]);
+  };
 
   // ─── Open confirm dialog ───
   const handleCancelOrder = useCallback((orderId) => {
@@ -226,7 +251,7 @@ export default function UserProfile() {
       className="w-full min-h-screen bg-[#f5f5f7] text-[#1d1d1f]"
       style={{ fontFamily: SF_TEXT }}
     >
-      <div className="max-w-[1068px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+      <div className="max-w-267 mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
         {/* ─── Header ─── */}
         <div className="mb-12 animate-fade-in-up">
           <h1
@@ -249,8 +274,8 @@ export default function UserProfile() {
           >
             <div className="bg-[#ffffff] rounded-[18px] border border-[#e0e0e0] p-4 flex flex-col gap-1">
               <button
-                onClick={() => setActiveTab("dashboard")}
-                className={`text-left px-4 py-[11px] rounded-[11px] text-[17px] transition-all ${
+                onClick={() => handleTabChange("dashboard")}
+                className={`text-left px-4 py-2.75 rounded-[11px] text-[17px] transition-all ${
                   activeTab === "dashboard"
                     ? "bg-[#f5f5f7] font-semibold text-[#1d1d1f]"
                     : "text-[#1d1d1f] hover:bg-[#f5f5f7]"
@@ -259,8 +284,8 @@ export default function UserProfile() {
                 Account Summary
               </button>
               <button
-                onClick={() => setActiveTab("orders")}
-                className={`text-left px-4 py-[11px] rounded-[11px] text-[17px] transition-all ${
+                onClick={() => handleTabChange("orders")}
+                className={`text-left px-4 py-2.75 rounded-[11px] text-[17px] transition-all ${
                   activeTab === "orders"
                     ? "bg-[#f5f5f7] font-semibold text-[#1d1d1f]"
                     : "text-[#1d1d1f] hover:bg-[#f5f5f7]"
@@ -269,8 +294,8 @@ export default function UserProfile() {
                 Order History
               </button>
               <button
-                onClick={() => setActiveTab("settings")}
-                className={`text-left px-4 py-[11px] rounded-[11px] text-[17px] transition-all ${
+                onClick={() => handleTabChange("settings")}
+                className={`text-left px-4 py-2.75 rounded-[11px] text-[17px] transition-all ${
                   activeTab === "settings"
                     ? "bg-[#f5f5f7] font-semibold text-[#1d1d1f]"
                     : "text-[#1d1d1f] hover:bg-[#f5f5f7]"
@@ -286,7 +311,7 @@ export default function UserProfile() {
                   await logout();
                   navigate("/");
                 }}
-                className="text-left px-4 py-[11px] rounded-[11px] text-[17px] text-[#e30000] hover:bg-[#fff0f0] transition-all active:scale-95 origin-left"
+                className="text-left px-4 py-2.75 rounded-[11px] text-[17px] text-[#e30000] hover:bg-[#fff0f0] transition-all active:scale-95 origin-left"
               >
                 Sign Out
               </button>
@@ -311,7 +336,7 @@ export default function UserProfile() {
                       Personal Info
                     </h2>
                     <button
-                      onClick={() => setActiveTab("settings")}
+                      onClick={() => handleTabChange("settings")}
                       className="text-[#0066cc] text-[17px] hover:underline active:opacity-70 transition-opacity"
                     >
                       Edit
@@ -363,7 +388,7 @@ export default function UserProfile() {
                       Recent Orders
                     </h2>
                     <button
-                      onClick={() => setActiveTab("orders")}
+                      onClick={() => handleTabChange("orders")}
                       className="text-[#0066cc] text-[17px] hover:underline active:opacity-70 transition-opacity"
                     >
                       View All
@@ -436,7 +461,7 @@ export default function UserProfile() {
                     </p>
                     <button
                       onClick={() => navigate("/products")}
-                      className="bg-[#0066cc] text-[#ffffff] px-[22px] py-[11px] rounded-full text-[17px] font-normal hover:bg-[#0071e3] active:scale-95 transition-all"
+                      className="bg-[#0066cc] text-[#ffffff] px-5.5 py-2.75 rounded-full text-[17px] font-normal hover:bg-[#0071e3] active:scale-95 transition-all"
                     >
                       Start Shopping
                     </button>
@@ -480,7 +505,7 @@ export default function UserProfile() {
                       type="text"
                       value={formName}
                       onChange={(e) => setFormName(e.target.value)}
-                      className="w-full bg-[#f5f5f7] border border-[#e0e0e0] text-[#1d1d1f] text-[17px] rounded-[11px] px-4 py-[11px] focus:outline-none focus:bg-[#ffffff] focus:ring-4 focus:ring-[#0071e3]/20 focus:border-[#0071e3] transition-all"
+                      className="w-full bg-[#f5f5f7] border border-[#e0e0e0] text-[#1d1d1f] text-[17px] rounded-[11px] px-4 py-2.75 focus:outline-none focus:bg-[#ffffff] focus:ring-4 focus:ring-[#0071e3]/20 focus:border-[#0071e3] transition-all"
                       placeholder="Your full name"
                     />
                   </div>
@@ -490,7 +515,7 @@ export default function UserProfile() {
                     <label className="block text-[14px] font-semibold tracking-[-0.224px] text-[#1d1d1f] mb-2">
                       Email Address
                     </label>
-                    <div className="w-full bg-[#f5f5f7] border border-[#e0e0e0] text-[#7a7a7a] text-[17px] rounded-[11px] px-4 py-[11px] cursor-not-allowed">
+                    <div className="w-full bg-[#f5f5f7] border border-[#e0e0e0] text-[#7a7a7a] text-[17px] rounded-[11px] px-4 py-2.75 cursor-not-allowed">
                       {user?.email || ""}
                     </div>
                     <p className="text-[12px] text-[#7a7a7a] mt-1">
@@ -507,7 +532,7 @@ export default function UserProfile() {
                       type="tel"
                       value={formPhone}
                       onChange={(e) => setFormPhone(e.target.value)}
-                      className="w-full bg-[#f5f5f7] border border-[#e0e0e0] text-[#1d1d1f] text-[17px] rounded-[11px] px-4 py-[11px] focus:outline-none focus:bg-[#ffffff] focus:ring-4 focus:ring-[#0071e3]/20 focus:border-[#0071e3] transition-all"
+                      className="w-full bg-[#f5f5f7] border border-[#e0e0e0] text-[#1d1d1f] text-[17px] rounded-[11px] px-4 py-2.75 focus:outline-none focus:bg-[#ffffff] focus:ring-4 focus:ring-[#0071e3]/20 focus:border-[#0071e3] transition-all"
                       placeholder="Your phone number"
                     />
                   </div>
@@ -521,7 +546,7 @@ export default function UserProfile() {
                       value={formAddress}
                       onChange={(e) => setFormAddress(e.target.value)}
                       rows={3}
-                      className="w-full bg-[#f5f5f7] border border-[#e0e0e0] text-[#1d1d1f] text-[17px] rounded-[11px] px-4 py-[11px] focus:outline-none focus:bg-[#ffffff] focus:ring-4 focus:ring-[#0071e3]/20 focus:border-[#0071e3] transition-all resize-y"
+                      className="w-full bg-[#f5f5f7] border border-[#e0e0e0] text-[#1d1d1f] text-[17px] rounded-[11px] px-4 py-2.75 focus:outline-none focus:bg-[#ffffff] focus:ring-4 focus:ring-[#0071e3]/20 focus:border-[#0071e3] transition-all resize-y"
                       placeholder="Your shipping address"
                     />
                   </div>
@@ -531,7 +556,7 @@ export default function UserProfile() {
                     <button
                       type="submit"
                       disabled={saving}
-                      className="bg-[#0066cc] text-[#ffffff] px-[22px] py-[11px] rounded-full text-[17px] font-normal hover:bg-[#0071e3] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
+                      className="bg-[#0066cc] text-[#ffffff] px-5.5 py-2.75 rounded-full text-[17px] font-normal hover:bg-[#0071e3] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
                     >
                       {saving ? (
                         <>
@@ -671,7 +696,7 @@ function OrderCard({ order, compact, cancellingId, onCancel }) {
                 </span>
               )}
             </div>
-            <div className="text-right flex-shrink-0 ml-4">
+            <div className="text-right shrink-0 ml-4">
               <div className="text-[14px] font-medium text-[#1d1d1f]">
                 {formatVnd(item.total)}
               </div>

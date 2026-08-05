@@ -1,4 +1,4 @@
-import React from "react";
+
 import { Link } from "react-router-dom";
 
 /* ═══════════════════════════════════════════════════════════════
@@ -62,7 +62,7 @@ const LEGAL_LINKS = [
 function StatusDot({ ok }) {
   return (
     <span
-      className={`inline-block w-[6px] h-[6px] rounded-full shrink-0 ${
+      className={`inline-block w-1.5 h-1.5 rounded-full shrink-0 ${
         ok ? "bg-[#1d8a3d]" : "bg-[#e30000]"
       }`}
       aria-hidden="true"
@@ -84,11 +84,11 @@ export default function FooterAdmin() {
           STATUS BAR — system overview, admin chrome
       ═══════════════════════════════════════ */}
       <div className="border-b border-[#e0e0e0] bg-white/60">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-4">
+        <div className="max-w-360 mx-auto px-4 sm:px-6 lg:px-10 py-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             {/* Left: system name + version */}
             <div className="flex items-center gap-3">
-              <span className="inline-flex items-center justify-center w-[26px] h-[26px] rounded-[7px] bg-[#0066cc] shrink-0">
+              <span className="inline-flex items-center justify-center w-6.5 h-6.5 rounded-7px bg-[#0066cc] shrink-0">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
                   <path
                     d="M13 3L4 14h7l-2 7 9-11h-7l2-7z"
@@ -132,7 +132,7 @@ export default function FooterAdmin() {
       {/* ═══════════════════════════════════════
           MAIN LINK COLUMNS — dense-link stack
       ═══════════════════════════════════════ */}
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-10 sm:py-12">
+      <div className="max-w-360 mx-auto px-4 sm:px-6 lg:px-10 py-10 sm:py-12">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
           {FOOTER_COLUMNS.map((col) => (
             <div key={col.heading}>
@@ -149,7 +149,7 @@ export default function FooterAdmin() {
                   <li key={link.href + link.label}>
                     <Link
                       to={link.href}
-                      className="text-[15px] font-normal tracking-[0px] leading-[2.0] text-[#333333] hover:text-[#0066cc] transition-colors no-underline"
+                      className="text-[15px] font-normal tracking-normal leading-loose text-[#333333] hover:text-[#0066cc] transition-colors no-underline"
                       style={{ fontFamily: SF_TEXT }}
                     >
                       {link.label}
@@ -163,7 +163,7 @@ export default function FooterAdmin() {
 
         {/* ─── Quick note ─── */}
         <div className="mt-8 pt-6 border-t border-[#e0e0e0] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <p className="text-[12px] font-normal tracking-[-0.12px] leading-[1.3] text-[#7a7a7a] max-w-[480px]">
+          <p className="text-[12px] font-normal tracking-[-0.12px] leading-[1.3] text-[#7a7a7a] max-w-120">
             Khu vực dành riêng cho quản trị viên. Vui lòng không chia sẻ thông
             tin truy cập với người khác.
           </p>
@@ -194,7 +194,7 @@ export default function FooterAdmin() {
           BOTTOM LEGAL ROW — fine-print
       ═══════════════════════════════════════ */}
       <div className="border-t border-[#e0e0e0]">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-4">
+        <div className="max-w-360 mx-auto px-4 sm:px-6 lg:px-10 py-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             {/* Copyright */}
             <p className="text-[12px] font-normal tracking-[-0.12px] leading-none text-[#7a7a7a]">
@@ -226,7 +226,7 @@ export default function FooterAdmin() {
 
             {/* Version */}
             <p className="text-[12px] font-normal tracking-[-0.12px] leading-none text-[#7a7a7a] flex items-center gap-1.5">
-              <span className="inline-block w-[6px] h-[6px] rounded-full bg-[#1d8a3d]" />
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#1d8a3d]" />
               Hệ thống đang chạy {CURRENT_VERSION}
             </p>
           </div>

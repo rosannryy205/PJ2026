@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import Loading from "../components/loading";
 
@@ -17,16 +17,7 @@ export default function Check_out() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ─── Nhận dữ liệu giỏ hàng từ Router State ───
-  const { cartItems, cartTotal } = location.state || {};
-
-  // Nếu không có state (truy cập thẳng URL) → redirect về /cart
-  if (!cartItems || !cartTotal) {
-    navigate("/cart", { replace: true });
-    return null;
-  }
-
-  // ─── Form state ───
+  // ─── Form state (phải khai báo trước mọi early return để tuân thủ Rules of Hooks) ───
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -38,6 +29,20 @@ export default function Check_out() {
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
+
+  // ─── Nhận dữ liệu giỏ hàng từ Router State ───
+  const { cartItems, cartTotal } = location.state || {};
+  const isInvalidCart = !cartItems || !cartTotal;
+
+  useEffect(() => {
+    if (isInvalidCart) {
+      navigate("/cart", { replace: true });
+    }
+  }, [isInvalidCart, navigate]);
+
+  if (isInvalidCart) {
+    return null;
+  }
 
   const total = cartItems.reduce(
     (acc, item) => acc + Number(item.price) * Number(item.quantity),
@@ -109,7 +114,7 @@ export default function Check_out() {
       className="w-full min-h-screen bg-[#ffffff] text-[#1d1d1f]"
       style={{ fontFamily: SF_TEXT }}
     >
-      <div className="max-w-[1068px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+      <div className="max-w-267 mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
         {/* Breadcrumb */}
         <div className="mb-8 text-[14px] text-[#7a7a7a] flex items-center gap-2">
           <Link to="/cart" className="hover:text-[#0066cc] transition-colors">
@@ -301,7 +306,7 @@ export default function Check_out() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-[#0066cc] text-[#ffffff] px-[28px] py-[14px] rounded-full text-[18px] font-normal hover:bg-[#0071e3] active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="w-full bg-[#0066cc] text-[#ffffff] px-7 py-3.5 rounded-full text-[18px] font-normal hover:bg-[#0071e3] active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <span className="inline-flex items-center justify-center gap-3">
@@ -318,7 +323,7 @@ export default function Check_out() {
 
           {/* Right Column: Order Summary */}
           <div
-            className="w-full lg:w-[420px] shrink-0 fade-in-up"
+            className="w-full lg:w-105 shrink-0 fade-in-up"
             style={{ animationDelay: "200ms" }}
           >
             <div className="bg-[#f5f5f7] rounded-[18px] p-6 lg:p-8 lg:sticky lg:top-24">
@@ -332,7 +337,7 @@ export default function Check_out() {
               <div className="space-y-6 mb-6">
                 {cartItems.map((item) => (
                   <div key={item.id} className="flex gap-4 items-center">
-                    <div className="w-16 h-16 shrink-0 bg-[#ffffff] rounded-[8px] flex items-center justify-center p-2 border border-[#e0e0e0]">
+                    <div className="w-16 h-16 shrink-0 bg-[#ffffff] rounded-lg flex items-center justify-center p-2 border border-[#e0e0e0]">
                       <img
                         src={item.image}
                         alt={item.name}
@@ -387,7 +392,7 @@ export default function Check_out() {
                   type="submit"
                   onClick={handleSubmit}
                   disabled={isSubmitting}
-                  className="w-full bg-[#0066cc] text-[#ffffff] px-[28px] py-[14px] rounded-full text-[18px] font-normal hover:bg-[#0071e3] active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="w-full bg-[#0066cc] text-[#ffffff] px-7 py-3.5 rounded-full text-[18px] font-normal hover:bg-[#0071e3] active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <span className="inline-flex items-center justify-center gap-3">

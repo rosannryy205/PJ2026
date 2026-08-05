@@ -57,7 +57,7 @@ export default function AuthModal() {
       ref={overlayRef}
       onClick={handleBackdropClick}
       className={[
-        "fixed inset-0 z-[100] flex items-center justify-center",
+        "fixed inset-0 z-100 flex items-center justify-center",
         "transition-all duration-300 ease-out",
         isOpen
           ? "opacity-100 pointer-events-auto"
@@ -78,12 +78,12 @@ export default function AuthModal() {
         onClick={closeModal}
         className={[
           "absolute top-4 right-4 sm:top-6 sm:right-6",
-          "w-[36px] h-[36px] rounded-full",
+          "w-4 h-4 rounded-full",
           "flex items-center justify-center",
           "text-white/70 hover:text-white",
           "transition-all duration-200",
           "cursor-pointer bg-white/10 hover:bg-white/20 border-none outline-none",
-          "z-[101]",
+          "z-101",
         ].join(" ")}
         aria-label="Đóng"
       >
@@ -107,7 +107,7 @@ export default function AuthModal() {
         ref={cardRef}
         className={[
           "relative w-full mx-4 sm:mx-0",
-          "max-w-[440px]",
+          "max-w-110",
           "bg-white rounded-[18px]",
           "shadow-[0_24px_48px_rgba(0,0,0,0.25)]",
           "overflow-y-auto max-h-[90vh]",
@@ -123,7 +123,7 @@ export default function AuthModal() {
         }}
       >
         {/* Inner padding */}
-        <div className="px-8 sm:px-10 py-10 sm:py-12">
+        <div className="px-6 sm:px-8 py-8 sm:py-10">
           {content[modalType] || content.login}
         </div>
       </div>

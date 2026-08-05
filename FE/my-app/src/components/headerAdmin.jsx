@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/authContext";
 
@@ -6,7 +6,6 @@ import { useAuth } from "../contexts/authContext";
    HẰNG SỐ & DỮ LIỆU
    ═══════════════════════════════════════════════════════════════ */
 const SF_TEXT = "SF Pro Text, system-ui, -apple-system, sans-serif";
-const SF_DISPLAY = "SF Pro Display, system-ui, -apple-system, sans-serif";
 
 /**
  * Menu dashboard — phân cấp BẬC 2.
@@ -250,12 +249,12 @@ function DesktopDropdown({ children = [] }) {
   if (!children.length) return null;
   return (
     <div className="absolute left-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out z-50">
-      <div className="w-[232px] rounded-[12px] bg-white border border-[#e0e0e0] py-2 shadow-[0_16px_40px_rgba(0,0,0,0.10)]">
+      <div className="w-58 rounded-xl bg-white border border-[#e0e0e0] py-2 shadow-[0_16px_40px_rgba(0,0,0,0.10)]">
         {children.map((child) => (
           <Link
             key={child.href + child.label}
             to={child.href}
-            className="flex items-center gap-2.5 px-4 py-[9px] text-[14px] font-normal tracking-[-0.224px] leading-[1.29] text-[#333333] hover:text-[#0066cc] hover:bg-[#f5f5f7] transition-colors no-underline"
+            className="flex items-center gap-2.5 px-4 py-2.25 text-[14px] font-normal tracking-[-0.224px] leading-[1.29] text-[#333333] hover:text-[#0066cc] hover:bg-[#f5f5f7] transition-colors no-underline"
             style={{ fontFamily: SF_TEXT }}
           >
             <span className="w-1 h-1 rounded-full bg-[#d2d2d7] group-hover:bg-[#0066cc] shrink-0" />
@@ -272,11 +271,14 @@ function DesktopDropdown({ children = [] }) {
    ═══════════════════════════════════════════════════════════════ */
 function MobileAccordion({ item, active, onNavigate }) {
   const [open, setOpen] = useState(active);
+  const [prevActive, setPrevActive] = useState(active);
 
-  // Tự mở nếu item đang active (khi drawer vừa mở)
-  useEffect(() => {
+  // Điều chỉnh state khi active thay đổi (không dùng effect — tránh cascading render)
+  // Pattern chính thức của React: "adjusting state during render"
+  if (prevActive !== active) {
+    setPrevActive(active);
     if (active) setOpen(true);
-  }, [active]);
+  }
 
   // Item không có children => link trực tiếp
   if (!item.children) {
@@ -284,7 +286,7 @@ function MobileAccordion({ item, active, onNavigate }) {
       <Link
         to={item.href}
         onClick={onNavigate}
-        className={`flex items-center gap-3 px-4 py-[11px] text-[15px] font-normal tracking-[-0.224px] rounded-[8px] no-underline transition-colors ${
+        className={`flex items-center gap-3 px-4 py-2.75 text-[15px] font-normal tracking-[-0.224px] rounded-lg no-underline transition-colors ${
           active
             ? "bg-[#0066cc]/10 text-[#0066cc] font-semibold"
             : "text-[#d2d2d7] hover:text-white hover:bg-[#2a2a2c]"
@@ -303,7 +305,7 @@ function MobileAccordion({ item, active, onNavigate }) {
       <button
         onClick={() => setOpen(!open)}
         aria-expanded={open}
-        className={`flex w-full items-center justify-between gap-3 px-4 py-[11px] text-[15px] font-normal tracking-[-0.224px] rounded-[8px] transition-colors bg-transparent border-none outline-none cursor-pointer ${
+        className={`flex w-full items-center justify-between gap-3 px-4 py-2.75 text-[15px] font-normal tracking-[-0.224px] rounded-lg transition-colors bg-transparent border-none outline-none cursor-pointer ${
           active
             ? "bg-[#0066cc]/10 text-[#0066cc] font-semibold"
             : "text-[#d2d2d7] hover:text-white hover:bg-[#2a2a2c]"
@@ -327,16 +329,16 @@ function MobileAccordion({ item, active, onNavigate }) {
       {/* Level 2 */}
       <div
         className={`overflow-hidden transition-all duration-300 ease-in-out ${
-          open ? "max-h-[400px] opacity-100" : "max-h-0 opacity-0"
+          open ? "max-h-100 opacity-100" : "max-h-0 opacity-0"
         }`}
       >
-        <div className="ml-[34px] pl-4 border-l border-[#333336] py-1 mb-1 flex flex-col gap-[2px]">
+        <div className="ml-8.5 pl-4 border-l border-[#333336] py-1 mb-1 flex flex-col gap-0.5">
           {item.children.map((child) => (
             <Link
               key={child.href + child.label}
               to={child.href}
               onClick={onNavigate}
-              className={`px-3 py-[8px] text-[13px] font-normal tracking-[-0.12px] rounded-[8px] no-underline transition-colors ${
+              className={`px-3 py-2 text-[13px] font-normal tracking-[-0.12px] rounded-lg no-underline transition-colors ${
                 item.activeHref === child.href
                   ? "text-white bg-[#2a2a2c]"
                   : "text-[#86868b] hover:text-white hover:bg-[#2a2a2c]"
@@ -358,7 +360,7 @@ function MobileAccordion({ item, active, onNavigate }) {
 export default function HeaderAdmin() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, logout } = useAuth();
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -425,18 +427,18 @@ export default function HeaderAdmin() {
             TOP BAR — dark, admin chrome
         ═══════════════════════════════════════════ */}
         <nav
-          className={`bg-[#1d1d1f] h-[56px] flex items-center transition-shadow duration-200 ${
+          className={`bg-[#1d1d1f] h-14 flex items-center transition-shadow duration-200 ${
             scrolled ? "shadow-[0_1px_0_rgba(255,255,255,0.08)]" : ""
           }`}
         >
-          <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 flex items-center justify-between gap-3">
+          <div className="w-full max-w-360 mx-auto px-4 sm:px-6 lg:px-10 flex items-center justify-between gap-3">
             {/* ── Left: hamburger + logo ── */}
             <div className="flex items-center gap-2 min-w-0">
               {/* Hamburger — mobile / tablet */}
               <button
                 id="admin-mobile-toggle"
                 onClick={() => setMobileOpen(!mobileOpen)}
-                className="lg:hidden inline-flex items-center justify-center w-[40px] h-[40px] rounded-[8px] text-[#d2d2d7] hover:text-white hover:bg-[#2a2a2c] transition-colors bg-transparent border-none outline-none cursor-pointer shrink-0"
+                className="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg text-[#d2d2d7] hover:text-white hover:bg-[#2a2a2c] transition-colors bg-transparent border-none outline-none cursor-pointer shrink-0"
                 aria-label={mobileOpen ? "Đóng menu" : "Mở menu"}
               >
                 <IconBase size={18}>
@@ -447,10 +449,10 @@ export default function HeaderAdmin() {
               {/* Logo / brand */}
               <Link
                 to="/admin/dashboard"
-                className="flex items-center gap-[8px] no-underline shrink-0"
+                className="flex items-center gap-2 no-underline shrink-0"
                 aria-label="TechStore Admin"
               >
-                <span className="inline-flex items-center justify-center w-[26px] h-[26px] rounded-[7px] bg-[#0066cc]">
+                <span className="inline-flex items-center justify-center w-6.5 h-6.5 rounded-[7px] bg-[#0066cc]">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
                     <path
                       d="M13 3L4 14h7l-2 7 9-11h-7l2-7z"
@@ -465,7 +467,7 @@ export default function HeaderAdmin() {
                   <span className="text-white text-[13px] font-semibold tracking-[0.3px] uppercase">
                     TechStore
                   </span>
-                  <span className="inline-block rounded-full bg-[#0066cc] text-white text-[10px] font-semibold tracking-[0.2px] px-[7px] py-[3px] leading-none">
+                  <span className="inline-block rounded-full bg-[#0066cc] text-white text-[10px] font-semibold tracking-[0.2px] px-1.75 py-0.75 leading-none">
                     ADMIN
                   </span>
                 </span>
@@ -473,7 +475,7 @@ export default function HeaderAdmin() {
             </div>
 
             {/* ── Center: search (desktop) ── */}
-            <div className="hidden md:block flex-1 max-w-[380px] mx-auto">
+            <div className="hidden md:block flex-1 max-w-95 mx-auto">
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#86868b] flex pointer-events-none">
                   <NavIcon name="search" size={15} />
@@ -481,7 +483,7 @@ export default function HeaderAdmin() {
                 <input
                   type="text"
                   placeholder="Tìm kiếm đơn hàng, khách hàng, sản phẩm..."
-                  className="w-full rounded-full bg-[#333336] text-white text-[13px] font-normal tracking-[-0.12px] leading-none py-[10px] pl-9 pr-4 border border-transparent placeholder:text-[#86868b] focus:bg-[#1d1d1f] focus:border-[#0066cc] focus:outline-none transition-all"
+                  className="w-full rounded-full bg-[#333336] text-white text-[13px] font-normal tracking-[-0.12px] leading-none py-2.5 pl-9 pr-4 border border-transparent placeholder:text-[#86868b] focus:bg-[#1d1d1f] focus:border-[#0066cc] focus:outline-none transition-all"
                   style={{ fontFamily: SF_TEXT }}
                 />
               </div>
@@ -496,12 +498,12 @@ export default function HeaderAdmin() {
                     setNotifOpen(!notifOpen);
                     setUserMenuOpen(false);
                   }}
-                  className="relative inline-flex items-center justify-center w-[40px] h-[40px] rounded-[8px] text-[#d2d2d7] hover:text-white hover:bg-[#2a2a2c] transition-colors bg-transparent border-none outline-none cursor-pointer"
+                  className="relative inline-flex items-center justify-center w-10 h-10 rounded-lg text-[#d2d2d7] hover:text-white hover:bg-[#2a2a2c] transition-colors bg-transparent border-none outline-none cursor-pointer"
                   aria-label="Thông báo"
                   aria-expanded={notifOpen}
                 >
                   <NavIcon name="bell" size={18} />
-                  <span className="absolute top-[7px] right-[8px] min-w-[14px] h-[14px] px-[3px] rounded-full bg-[#e30000] text-white text-[9px] font-semibold flex items-center justify-center leading-none">
+                  <span className="absolute top-1.75right-[8px] min-w-3.5 h-3.5 px-0.75 rounded-full bg-[#e30000] text-white text-[9px] font-semibold flex items-center justify-center leading-none">
                     2
                   </span>
                 </button>
@@ -509,7 +511,7 @@ export default function HeaderAdmin() {
                 {/* Notification dropdown */}
                 {notifOpen && (
                   <div className="absolute right-0 top-full pt-2 z-50 w-[320px] max-w-[calc(100vw-32px)]">
-                    <div className="rounded-[12px] bg-white border border-[#e0e0e0] shadow-[0_16px_40px_rgba(0,0,0,0.10)] overflow-hidden">
+                    <div className="rounded-xl bg-white border border-[#e0e0e0] shadow-[0_16px_40px_rgba(0,0,0,0.10)] overflow-hidden">
                       <div className="flex items-center justify-between px-4 py-3 border-b border-[#f0f0f0]">
                         <span className="text-[14px] font-semibold tracking-[-0.224px] text-[#1d1d1f]">
                           Thông báo
@@ -518,7 +520,7 @@ export default function HeaderAdmin() {
                           Đánh dấu đã đọc
                         </span>
                       </div>
-                      <div className="max-h-[320px] overflow-y-auto">
+                      <div className="max-h-80 overflow-y-auto">
                         {NOTIFICATIONS.map((n) => (
                           <div
                             key={n.id}
@@ -556,7 +558,7 @@ export default function HeaderAdmin() {
               </div>
 
               {/* Divider */}
-              <span className="hidden sm:block w-px h-[24px] bg-[#333336] mx-1" />
+              <span className="hidden sm:block w-px h-6 bg-[#333336] mx-1" />
 
               {/* User menu */}
               <div className="relative" ref={userMenuRef}>
@@ -565,11 +567,11 @@ export default function HeaderAdmin() {
                     setUserMenuOpen(!userMenuOpen);
                     setNotifOpen(false);
                   }}
-                  className="flex items-center gap-2.5 py-1 pl-1 pr-2 rounded-[8px] hover:bg-[#2a2a2c] transition-colors bg-transparent border-none outline-none cursor-pointer"
+                  className="flex items-center gap-2.5 py-1 pl-1 pr-2 rounded-lg hover:bg-[#2a2a2c] transition-colors bg-transparent border-none outline-none cursor-pointer"
                   aria-expanded={userMenuOpen}
                   aria-label="Menu tài khoản"
                 >
-                  <span className="inline-flex items-center justify-center w-[30px] h-[30px] rounded-full bg-[#0066cc] text-white text-[12px] font-semibold leading-none shrink-0">
+                  <span className="inline-flex items-center justify-center w-7.5 h-7.5 rounded-full bg-[#0066cc] text-white text-[12px] font-semibold leading-none shrink-0">
                     {initials}
                   </span>
                   <span className="hidden lg:flex flex-col items-start leading-none">
@@ -592,11 +594,11 @@ export default function HeaderAdmin() {
 
                 {/* User dropdown */}
                 {userMenuOpen && (
-                  <div className="absolute right-0 top-full pt-2 z-50 w-[240px]">
-                    <div className="rounded-[12px] bg-white border border-[#e0e0e0] shadow-[0_16px_40px_rgba(0,0,0,0.10)] overflow-hidden">
+                  <div className="absolute right-0 top-full pt-2 z-50 w-60">
+                    <div className="rounded-xl bg-white border border-[#e0e0e0] shadow-[0_16px_40px_rgba(0,0,0,0.10)] overflow-hidden">
                       {/* User summary */}
                       <div className="px-4 py-3.5 border-b border-[#f0f0f0] flex items-center gap-3">
-                        <span className="inline-flex items-center justify-center w-[36px] h-[36px] rounded-full bg-[#0066cc] text-white text-[13px] font-semibold leading-none shrink-0">
+                        <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-[#0066cc] text-white text-[13px] font-semibold leading-none shrink-0">
                           {initials}
                         </span>
                         <div className="min-w-0">
@@ -613,14 +615,14 @@ export default function HeaderAdmin() {
                       <div className="py-1.5">
                         <Link
                           to="/"
-                          className="flex items-center gap-3 px-4 py-[9px] text-[14px] font-normal tracking-[-0.224px] text-[#333333] hover:text-[#0066cc] hover:bg-[#f5f5f7] transition-colors no-underline"
+                          className="flex items-center gap-3 px-4 py-2.25 text-[14px] font-normal tracking-[-0.224px] text-[#333333] hover:text-[#0066cc] hover:bg-[#f5f5f7] transition-colors no-underline"
                         >
                           <NavIcon name="home" size={16} className="shrink-0" />
                           Về trang chủ
                         </Link>
                         <Link
                           to="/user_profile"
-                          className="flex items-center gap-3 px-4 py-[9px] text-[14px] font-normal tracking-[-0.224px] text-[#333333] hover:text-[#0066cc] hover:bg-[#f5f5f7] transition-colors no-underline"
+                          className="flex items-center gap-3 px-4 py-2.25 text-[14px] font-normal tracking-[-0.224px] text-[#333333] hover:text-[#0066cc] hover:bg-[#f5f5f7] transition-colors no-underline"
                         >
                           <NavIcon name="user" size={16} className="shrink-0" />
                           Tài khoản
@@ -630,7 +632,7 @@ export default function HeaderAdmin() {
                       <div className="border-t border-[#f0f0f0] py-1.5">
                         <button
                           onClick={handleLogout}
-                          className="flex w-full items-center gap-3 px-4 py-[9px] text-[14px] font-normal tracking-[-0.224px] text-[#e30000] hover:bg-[#fff0f0] transition-colors bg-transparent border-none outline-none cursor-pointer text-left"
+                          className="flex w-full items-center gap-3 px-4 py-2.25 text-[14px] font-normal tracking-[-0.224px] text-[#e30000] hover:bg-[#fff0f0] transition-colors bg-transparent border-none outline-none cursor-pointer text-left"
                           style={{ fontFamily: SF_TEXT }}
                         >
                           <NavIcon
@@ -655,20 +657,20 @@ export default function HeaderAdmin() {
         ═══════════════════════════════════════════ */}
         <div
           id="admin-subnav"
-          className="hidden lg:block h-[50px] border-b border-[#e0e0e0] relative"
+          className="hidden lg:block h-12.5 border-b border-[#e0e0e0] relative"
           style={{
             backgroundColor: "rgba(245, 245, 247, 0.80)",
             backdropFilter: "saturate(180%) blur(20px)",
             WebkitBackdropFilter: "saturate(180%) blur(20px)",
           }}
         >
-          <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 h-full flex items-center justify-between gap-6">
+          <div className="w-full max-w-360 mx-auto px-4 sm:px-6 lg:px-10 h-full flex items-center justify-between gap-6">
             {/* Left: menu chính */}
             <nav
               className="flex items-center h-full gap-1"
               aria-label="Menu quản trị"
             >
-              {navState.map(({ item, active, activeHref }) => (
+              {navState.map(({ item, active }) => (
                 <div
                   key={item.label}
                   className="relative group h-full flex items-center"
@@ -717,7 +719,7 @@ export default function HeaderAdmin() {
                       {item.label}
                       {/* Active underline indicator */}
                       {active && (
-                        <span className="absolute inset-x-3 bottom-0 h-[2px] rounded-full bg-[#0066cc]" />
+                        <span className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-[#0066cc]" />
                       )}
                     </Link>
                   )}
@@ -728,7 +730,7 @@ export default function HeaderAdmin() {
             {/* Right: quick action */}
             <Link
               to="/admin/products/create"
-              className="inline-flex items-center gap-1.5 shrink-0 rounded-full bg-[#0066cc] text-white text-[13px] font-normal tracking-[-0.12px] leading-none px-[16px] py-[9px] hover:bg-[#0071e3] active:scale-95 transition-all no-underline"
+              className="inline-flex items-center gap-1.5 shrink-0 rounded-full bg-[#0066cc] text-white text-[13px] font-normal tracking-[-0.12px] leading-none px-4 py-2.25 hover:bg-[#0071e3] active:scale-95 transition-all no-underline"
             >
               <NavIcon name="plus" size={13} />
               Tạo mới
@@ -753,7 +755,7 @@ export default function HeaderAdmin() {
         {/* Drawer panel */}
         <div
           id="admin-mobile-drawer"
-          className={`fixed top-0 left-0 h-full w-[300px] max-w-[85vw] bg-[#1d1d1f] z-50 lg:hidden transition-transform duration-300 ease-out overflow-y-auto ${
+          className={`fixed top-0 left-0 h-full w-75 max-w-[85vw] bg-[#1d1d1f] z-50 lg:hidden transition-transform duration-300 ease-out overflow-y-auto ${
             mobileOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
@@ -764,7 +766,7 @@ export default function HeaderAdmin() {
               onClick={closeMobile}
               className="flex items-center gap-2 no-underline"
             >
-              <span className="inline-flex items-center justify-center w-[24px] h-[24px] rounded-[6px] bg-[#0066cc]">
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-[#0066cc]">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
                   <path
                     d="M13 3L4 14h7l-2 7 9-11h-7l2-7z"
@@ -781,7 +783,7 @@ export default function HeaderAdmin() {
             </Link>
             <button
               onClick={closeMobile}
-              className="inline-flex items-center justify-center w-[36px] h-[36px] rounded-[8px] text-[#86868b] hover:text-white hover:bg-[#2a2a2c] transition-colors bg-transparent border-none outline-none cursor-pointer"
+              className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-[#86868b] hover:text-white hover:bg-[#2a2a2c] transition-colors bg-transparent border-none outline-none cursor-pointer"
               aria-label="Đóng menu"
             >
               <IconBase size={18}>{ICON_PATHS.close}</IconBase>
@@ -791,7 +793,7 @@ export default function HeaderAdmin() {
           {/* User summary */}
           <div className="px-4 py-4 border-b border-[#333336]">
             <div className="flex items-center gap-3">
-              <span className="inline-flex items-center justify-center w-[40px] h-[40px] rounded-full bg-[#0066cc] text-white text-[14px] font-semibold leading-none shrink-0">
+              <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[#0066cc] text-white text-[14px] font-semibold leading-none shrink-0">
                 {initials}
               </span>
               <div className="min-w-0">
@@ -822,7 +824,7 @@ export default function HeaderAdmin() {
             <Link
               to="/"
               onClick={closeMobile}
-              className="flex items-center gap-3 px-3 py-[10px] text-[14px] text-[#d2d2d7] hover:text-white hover:bg-[#2a2a2c] rounded-[8px] transition-colors no-underline"
+              className="flex items-center gap-3 px-3 py-2.5 text-[14px] text-[#d2d2d7] hover:text-white hover:bg-[#2a2a2c] rounded-lg transition-colors no-underline"
             >
               <NavIcon name="home" size={16} className="shrink-0" />
               Về trang chủ
@@ -832,7 +834,7 @@ export default function HeaderAdmin() {
                 closeMobile();
                 await handleLogout();
               }}
-              className="flex items-center gap-3 px-3 py-[10px] text-[14px] text-[#e30000] hover:bg-[#fff0f0] hover:text-[#e30000] rounded-[8px] transition-colors bg-transparent border-none outline-none cursor-pointer text-left"
+              className="flex items-center gap-3 px-3 py-2.5 text-[14px] text-[#e30000] hover:bg-[#fff0f0] hover:text-[#e30000] rounded-lg transition-colors bg-transparent border-none outline-none cursor-pointer text-left"
               style={{ fontFamily: SF_TEXT }}
             >
               <NavIcon name="logout" size={16} className="shrink-0" />

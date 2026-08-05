@@ -16,8 +16,8 @@ const ActionButton = ({ children, onClick, ariaLabel, variant }) => {
       aria-label={ariaLabel}
       className={
         isPrimary
-          ? "inline-flex items-center justify-center rounded-full bg-[#0066cc] text-white text-[17px] font-normal tracking-[-0.374px] leading-[1.47] px-[22px] py-[11px] hover:bg-[#0071e3] active:scale-95 transition-all cursor-pointer border-none outline-none"
-          : "inline-flex items-center justify-center rounded-full bg-transparent text-[#0066cc] text-[17px] font-normal tracking-[-0.374px] leading-[1.47] px-[20px] py-[11px] border border-[#0066cc] hover:bg-[rgba(0,102,204,0.06)] active:scale-95 transition-all cursor-pointer outline-none"
+          ? "inline-flex items-center justify-center rounded-full bg-[#0066cc] text-white text-[17px] font-normal tracking-[-0.374px] leading-[1.47] px-5.5 py-2.75 hover:bg-[#0071e3] active:scale-95 transition-all cursor-pointer border-none outline-none"
+          : "inline-flex items-center justify-center rounded-full bg-transparent text-[#0066cc] text-[17px] font-normal tracking-[-0.374px] leading-[1.47] px-5 py-2.75 border border-[#0066cc] hover:bg-[rgba(0,102,204,0.06)] active:scale-95 transition-all cursor-pointer outline-none"
       }
       style={{
         fontFamily: "SF Pro Text, system-ui, -apple-system, sans-serif",
@@ -49,8 +49,8 @@ const OptionGroup = ({ label, name, items, selectedId, onSelect }) => {
               aria-label={it.label}
               className={
                 isSel
-                  ? "px-[16px] py-[10px] rounded-full border-2 border-[#0071e3] bg-white/0 text-[#1d1d1f] text-[14px] font-normal tracking-[-0.224px] leading-[1.43] active:scale-95 transition-transform cursor-pointer"
-                  : "px-[16px] py-[10px] rounded-full border border-[rgba(0,0,0,0.08)] bg-white text-[#1d1d1f] text-[14px] font-normal tracking-[-0.224px] leading-[1.43] hover:bg-[#f5f5f7] active:scale-95 transition-transform cursor-pointer"
+                  ? "px-4 py-2.5 rounded-full border-2 border-[#0071e3] bg-white/0 text-[#1d1d1f] text-[14px] font-normal tracking-[-0.224px] leading-[1.43] active:scale-95 transition-transform cursor-pointer"
+                  : "px-4 py-2.5 rounded-full border border-[rgba(0,0,0,0.08)] bg-white text-[#1d1d1f] text-[14px] font-normal tracking-[-0.224px] leading-[1.43] hover:bg-[#f5f5f7] active:scale-95 transition-transform cursor-pointer"
               }
               style={{
                 fontFamily: "SF Pro Text, system-ui, -apple-system, sans-serif",
@@ -122,15 +122,17 @@ export default function Product_detail() {
     return found ?? productVariants[0];
   }, [productVariants, selected.color, selected.ram, selected.storage]);
 
-  // Đồng bộ selected với selectedVariant khi fetch xong.
-  useEffect(() => {
-    if (!selectedVariant) return;
-    setSelected({
-      color: selectedVariant.color ?? null,
-      ram: selectedVariant.ram ?? null,
-      storage: selectedVariant.storage ?? null,
-    });
-  }, [selectedVariant]);
+  // Giá trị đã "chốt" theo variant khả dụng (dựa trên selectedVariant).
+  // Không dùng effect để setState => tránh cascading render.
+  // Các OptionGroup hiển thị dựa trên giá trị này thay vì selected thô.
+  const effectiveSelected = useMemo(
+    () => ({
+      color: selectedVariant?.color ?? null,
+      ram: selectedVariant?.ram ?? null,
+      storage: selectedVariant?.storage ?? null,
+    }),
+    [selectedVariant],
+  );
 
   // Fetch product theo id từ FE -> BE.
   useEffect(() => {
@@ -449,14 +451,14 @@ export default function Product_detail() {
     >
       {/* SECTION 1: Ảnh + Thông tin */}
       <div
-        className="min-h-[100svh] bg-[#ffffff]"
+        className="min-h-svh bg-[#ffffff]"
         style={{ overflow: "hidden" }}
       >
         <div className="w-full mx-auto px-4 sm:px-6 lg:px-10 pt-8 sm:pt-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 items-start gap-8 lg:gap-10">
             <div className="w-full" aria-label="Ảnh sản phẩm">
               <div className="relative">
-                <div className="h-[52svh] min-h-[420px] max-h-[640px] overflow-hidden">
+                <div className="h-[52svh] min-h-105 max-h-160 overflow-hidden">
                   <img
                     src={`../src/assets/${mainImage}`}
                     alt={mapped.name}
@@ -465,7 +467,7 @@ export default function Product_detail() {
                   />
                 </div>
                 <div
-                  className="mx-auto w-[70%] h-[18px] mt-[-14px]"
+                  className="mx-auto w-[70%] h-4.5 -mt-3.5"
                   style={{
                     boxShadow: "rgba(0, 0, 0, 0.22) 3px 5px 30px 0",
                     borderRadius: "9999px",
@@ -516,7 +518,7 @@ export default function Product_detail() {
                     label="Màu"
                     name="Màu"
                     items={variantOptions.colors}
-                    selectedId={selected.color}
+                    selectedId={effectiveSelected.color}
                     onSelect={(id) => {
                       // Khi đổi màu, cố gắng giữ ram/storage nếu variant tương ứng tồn tại.
                       setSelected((s) => ({ ...s, color: id }));
@@ -528,7 +530,7 @@ export default function Product_detail() {
                       label="RAM"
                       name="RAM"
                       items={variantOptions.rams}
-                      selectedId={selected.ram}
+                      selectedId={effectiveSelected.ram}
                       onSelect={(id) => {
                         setSelected((s) => ({ ...s, ram: id }));
                       }}
@@ -540,7 +542,7 @@ export default function Product_detail() {
                       label="Bộ nhớ"
                       name="Bộ nhớ"
                       items={variantOptions.storages}
-                      selectedId={selected.storage}
+                      selectedId={effectiveSelected.storage}
                       onSelect={(id) => {
                         setSelected((s) => ({ ...s, storage: id }));
                       }}
@@ -679,7 +681,7 @@ export default function Product_detail() {
                   <img
                     src={p.image}
                     alt={p.name}
-                    className="w-full h-[220px] sm:h-[260px] lg:h-[280px] object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
+                    className="w-full h-55 sm:h-65 lg:h-70 object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
                     style={{
                       boxShadow: "rgba(0, 0, 0, 0.22) 3px 5px 30px 0",
                       borderRadius: 18,
@@ -700,7 +702,7 @@ export default function Product_detail() {
                   </h3>
                   <p
                     title={p.tagline}
-                    className="w-full min-w-0 mt-2 text-[17px] leading-[1.47] tracking-[-0.374px] line-clamp-2 h-[50px] overflow-hidden text-ellipsis"
+                    className="w-full min-w-0 mt-2 text-[17px] leading-[1.47] tracking-[-0.374px] line-clamp-2 h-12.5 overflow-hidden text-ellipsis"
                     style={{
                       fontFamily:
                         "SF Pro Text, system-ui, -apple-system, sans-serif",
@@ -714,7 +716,7 @@ export default function Product_detail() {
                   <div className="mt-6">
                     <a
                       href={p.href}
-                      className="inline-flex items-center justify-center rounded-full bg-[#0066cc] text-white text-[18px] font-light leading-none px-[28px] py-[14px] hover:bg-[#0071e3] active:scale-95 transition-all no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2"
+                      className="inline-flex items-center justify-center rounded-full bg-[#0066cc] text-white text-[18px] font-light leading-none px-7 py-3.5 hover:bg-[#0071e3] active:scale-95 transition-all no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2"
                       style={{
                         fontFamily:
                           "SF Pro Text, system-ui, -apple-system, sans-serif",

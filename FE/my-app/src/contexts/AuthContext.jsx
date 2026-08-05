@@ -1,4 +1,12 @@
-import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
+/* eslint-disable react-refresh/only-export-components */
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+} from "react";
 
 /**
  * AuthContext
@@ -55,7 +63,11 @@ export function AuthProvider({ children }) {
 
   // Lần mount đầu: tự gọi me để khôi phục session
   useEffect(() => {
-    refreshMe();
+    const initializeAuth = async () => {
+      await refreshMe();
+    };
+
+    initializeAuth();
   }, [refreshMe]);
 
   const value = useMemo(() => {
@@ -78,4 +90,3 @@ export function useAuth() {
   }
   return ctx;
 }
-

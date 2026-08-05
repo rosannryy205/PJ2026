@@ -1,4 +1,4 @@
-import React from "react";
+
 
 const SF_TEXT = "SF Pro Text, system-ui, -apple-system, sans-serif";
 
@@ -93,7 +93,7 @@ export default function InlineAlert({
       ].join(" ")}
       style={{ fontFamily: SF_TEXT }}
     >
-      <div className="mt-[2px] shrink-0">
+      <div className="mt-0.5 shrink-0">
         <AlertIcon variant={variant} />
       </div>
 
@@ -115,7 +115,7 @@ export default function InlineAlert({
           type="button"
           onClick={onDismiss}
           aria-label="Close"
-          className="shrink-0 w-[30px] h-[30px] rounded-full"
+          className="shrink-0 w-7.5 h-7.5 rounded-full"
           style={{ color: "#7a7a7a" }}
         >
           <svg

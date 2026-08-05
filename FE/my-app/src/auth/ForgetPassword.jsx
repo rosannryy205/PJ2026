@@ -68,7 +68,7 @@ export default function ForgetPassword() {
             {/* Submit */}
             <button
               type="submit"
-              className="mt-2 w-full h-[44px] rounded-full bg-[#0066cc] text-white text-[17px] font-normal tracking-[-0.374px] leading-[1.47] border-none cursor-pointer hover:bg-[#0071e3] active:scale-[0.95] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2"
+              className="mt-2 w-full h-11 rounded-full bg-[#0066cc] text-white text-[17px] font-normal tracking-[-0.374px] leading-[1.47] border-none cursor-pointer hover:bg-[#0071e3] active:scale-[0.95] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2"
               style={{ fontFamily: SF_TEXT }}
             >
               Gửi liên kết đặt lại
@@ -80,7 +80,7 @@ export default function ForgetPassword() {
         <div className="mt-6">
           {/* Success icon */}
           <div className="flex justify-center mb-4">
-            <div className="w-[48px] h-[48px] rounded-full bg-[#f5f5f7] flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-[#f5f5f7] flex items-center justify-center">
               <svg
                 width="24"
                 height="24"
@@ -107,7 +107,7 @@ export default function ForgetPassword() {
           <button
             type="button"
             onClick={() => setIsSubmitted(false)}
-            className="mt-6 w-full h-[44px] rounded-full bg-transparent text-[#0066cc] text-[17px] font-normal tracking-[-0.374px] leading-[1.47] border border-[#0066cc] cursor-pointer hover:bg-[#0066cc]/5 active:scale-[0.95] transition-all duration-200"
+            className="mt-6 w-full h-11 rounded-full bg-transparent text-[#0066cc] text-[17px] font-normal tracking-[-0.374px] leading-[1.47] border border-[#0066cc] cursor-pointer hover:bg-[#0066cc]/5 active:scale-[0.95] transition-all duration-200"
             style={{ fontFamily: SF_TEXT }}
           >
             Thử email khác

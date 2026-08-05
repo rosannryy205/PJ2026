@@ -30,7 +30,7 @@ function ProductCard({ p }) {
         <img
           src={`../src/assets/${p.image}`}
           alt={p.name}
-          className="w-full h-[240px] sm:h-[260px] lg:h-[280px] object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
+          className="w-full h-60 sm:h-65 lg:h-70 object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
           style={{
             boxShadow: "rgba(0, 0, 0, 0.22) 3px 5px 30px 0",
             borderRadius: 18,
@@ -49,7 +49,7 @@ function ProductCard({ p }) {
 
         <p
           title={p.tagline}
-          className="w-full min-w-0 mt-2 text-[17px] leading-[1.47] tracking-[-0.374px] line-clamp-2 h-[50px] overflow-hidden text-ellipsis"
+          className="w-full min-w-0 mt-2 text-[17px] leading-[1.47] tracking-[-0.374px] line-clamp-2 h-12.5 overflow-hidden text-ellipsis"
           style={{
             fontFamily: SF_TEXT,
             fontWeight: 400,
@@ -62,7 +62,7 @@ function ProductCard({ p }) {
         <div className="mt-6">
           <a
             href={p.href}
-            className="inline-flex items-center justify-center rounded-full bg-[#0066cc] text-white text-[18px] font-light leading-none px-[28px] py-[14px] hover:bg-[#0071e3] active:scale-95 transition-all no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2"
+            className="inline-flex items-center justify-center rounded-full bg-[#0066cc] text-white text-[18px] font-light leading-none px-7 py-3.5 hover:bg-[#0071e3] active:scale-95 transition-all no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2"
             style={{ fontFamily: SF_TEXT }}
             aria-label={`Xem ${p.name}`}
           >
@@ -163,7 +163,7 @@ export default function Products() {
 
         setProducts(mapped);
         setPage(1); // reset trang khi đổi filter slug
-      } catch (e) {
+      } catch {
         setError("Error fetching product data.");
         setProducts([]);
       } finally {
@@ -176,15 +176,14 @@ export default function Products() {
 
   const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
 
-  React.useEffect(() => {
-    setPage((p) => Math.min(p, totalPages));
-  }, [totalPages]);
+  // Kẹp page an toàn khi render (thay cho effect setPage gây cascading renders)
+  const safePage = Math.min(page, totalPages);
 
   const pageItems = React.useMemo(() => {
-    const start = (page - 1) * PAGE_SIZE;
+    const start = (safePage - 1) * PAGE_SIZE;
     const end = start + PAGE_SIZE;
     return products.slice(start, end);
-  }, [products, page]);
+  }, [products, safePage]);
 
   if (loading) {
     return (
@@ -217,9 +216,9 @@ export default function Products() {
   return (
     <main className="w-full">
       <section className="w-full" style={{ backgroundColor: "#ffffff" }}>
-        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-10 py-10 lg:py-14">
+        <div className="mx-auto max-w-360 px-4 sm:px-6 lg:px-10 py-10 lg:py-14">
           {/* header */}
-          <div className="max-w-[980px] mx-auto mb-8 text-center">
+          <div className="max-w-245 mx-auto mb-8 text-center">
             <div
               className="inline-flex items-center justify-center gap-3 rounded-full bg-[#f5f5f7] border border-[#e0e0e0] px-4 py-2"
               style={{ fontFamily: SF_TEXT }}
@@ -248,7 +247,7 @@ export default function Products() {
           </div>
 
           {/* grid */}
-          <div className="max-w-[1440px] mx-auto">
+          <div className="max-w-360 mx-auto">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
               {pageItems.map((p) => (
                 <ProductCard key={p.id ?? p.href ?? p.name} p={p} />
@@ -273,7 +272,7 @@ export default function Products() {
                   type="button"
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="rounded-full px-[22px] py-[11px] text-[17px] tracking-[-0.374px] leading-[1.47] transition-all"
+                  className="rounded-full px-5.5 py-2.75 text-[17px] tracking-[-0.374px] leading-[1.47] transition-all"
                   style={{
                     fontFamily: SF_TEXT,
                     backgroundColor: page === 1 ? "#f0f0f0" : "#0066cc",
@@ -298,7 +297,7 @@ export default function Products() {
                   type="button"
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="rounded-full px-[22px] py-[11px] text-[17px] tracking-[-0.374px] leading-[1.47] transition-all"
+                  className="rounded-full px-5.5 py-2.75 text-[17px] tracking-[-0.374px] leading-[1.47] transition-all"
                   style={{
                     fontFamily: SF_TEXT,
                     backgroundColor:

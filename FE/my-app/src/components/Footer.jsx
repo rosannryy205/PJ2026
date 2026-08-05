@@ -108,10 +108,10 @@ export default function Footer() {
           TOP SECTION — Newsletter + Social
       ═══════════════════════════════════════ */}
       <div className="border-b border-[#e0e0e0]">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-10 sm:py-12">
+        <div className="max-w-360 mx-auto px-4 sm:px-6 lg:px-10 py-10 sm:py-12">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 lg:gap-10">
             {/* Newsletter */}
-            <div className="max-w-[480px]">
+            <div className="max-w-120">
               <h3
                 className="text-[21px] font-semibold tracking-[0.231px] leading-[1.19] text-[#1d1d1f] mb-2"
                 style={{
@@ -129,14 +129,14 @@ export default function Footer() {
                 <input
                   type="email"
                   placeholder="Nhập email của bạn"
-                  className="flex-1 min-w-0 rounded-full bg-white text-[#1d1d1f] text-[17px] font-normal tracking-[-0.374px] leading-[1.47] px-5 py-[10px] border border-[rgba(0,0,0,0.08)] outline-none focus:border-[#0066cc] transition-colors placeholder:text-[#7a7a7a]"
+                  className="flex-1 min-w-0 rounded-full bg-white text-[#1d1d1f] text-[17px] font-normal tracking-[-0.374px] leading-[1.47] px-5 py-2.5 border border-[rgba(0,0,0,0.08)] outline-none focus:border-[#0066cc] transition-colors placeholder:text-[#7a7a7a]"
                   style={{
                     fontFamily:
                       "SF Pro Text, system-ui, -apple-system, sans-serif",
                   }}
                 />
                 <button
-                  className="shrink-0 rounded-full bg-[#0066cc] text-white text-[17px] font-normal tracking-[-0.374px] leading-[1.47] px-[22px] py-[10px] hover:bg-[#0071e3] active:scale-95 transition-all cursor-pointer border-none outline-none"
+                  className="shrink-0 rounded-full bg-[#0066cc] text-white text-[17px] font-normal tracking-[-0.374px] leading-[1.47] px-5.5 py-2.5 hover:bg-[#0071e3] active:scale-95 transition-all cursor-pointer border-none outline-none"
                   style={{
                     fontFamily:
                       "SF Pro Text, system-ui, -apple-system, sans-serif",
@@ -186,7 +186,7 @@ export default function Footer() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={label}
-                    className="inline-flex items-center justify-center w-[40px] h-[40px] rounded-full bg-[#e0e0e0]/60 text-[#333333] hover:bg-[#0066cc] hover:text-white transition-all active:scale-95"
+                    className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[#e0e0e0]/60 text-[#333333] hover:bg-[#0066cc] hover:text-white transition-all active:scale-95"
                   >
                     <Icon />
                   </a>
@@ -200,7 +200,7 @@ export default function Footer() {
       {/* ═══════════════════════════════════════
           MAIN COLUMNS — Link Grid
       ═══════════════════════════════════════ */}
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-10 sm:py-16">
+      <div className="max-w-360 mx-auto px-4 sm:px-6 lg:px-10 py-10 sm:py-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6">
           {footerColumns.map((col) => (
             <div key={col.heading}>
@@ -215,7 +215,7 @@ export default function Footer() {
                   <li key={link.label}>
                     <Link
                       to={link.href}
-                      className="text-[17px] font-normal tracking-[0px] leading-[2.41] text-[#333333] hover:text-[#0066cc] transition-colors no-underline"
+                      className="text-[17px] font-normal tracking-normal leading-[2.41] text-[#333333] hover:text-[#0066cc] transition-colors no-underline"
                     >
                       {link.label}
                     </Link>
@@ -230,7 +230,7 @@ export default function Footer() {
         <div className="mt-10 pt-8 border-t border-[#e0e0e0] flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-10">
           {/* Hotline */}
           <div className="flex items-center gap-3">
-            <span className="inline-flex items-center justify-center w-[36px] h-[36px] rounded-full bg-[#e0e0e0]/60 text-[#333333] shrink-0">
+            <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-[#e0e0e0]/60 text-[#333333] shrink-0">
               <svg
                 width="16"
                 height="16"
@@ -256,7 +256,7 @@ export default function Footer() {
 
           {/* Email */}
           <div className="flex items-center gap-3">
-            <span className="inline-flex items-center justify-center w-[36px] h-[36px] rounded-full bg-[#e0e0e0]/60 text-[#333333] shrink-0">
+            <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-[#e0e0e0]/60 text-[#333333] shrink-0">
               <svg
                 width="16"
                 height="16"
@@ -283,7 +283,7 @@ export default function Footer() {
 
           {/* Address */}
           <div className="flex items-center gap-3">
-            <span className="inline-flex items-center justify-center w-[36px] h-[36px] rounded-full bg-[#e0e0e0]/60 text-[#333333] shrink-0">
+            <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-[#e0e0e0]/60 text-[#333333] shrink-0">
               <svg
                 width="16"
                 height="16"
@@ -314,7 +314,7 @@ export default function Footer() {
           BOTTOM LEGAL ROW — fine-print
       ═══════════════════════════════════════ */}
       <div className="border-t border-[#e0e0e0]">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-4">
+        <div className="max-w-360 mx-auto px-4 sm:px-6 lg:px-10 py-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             {/* Copyright */}
             <p className="text-[12px] font-normal tracking-[-0.12px] leading-none text-[#7a7a7a]">

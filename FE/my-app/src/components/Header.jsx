@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuthModal } from "../contexts/authModalContext";
-import { useAuth } from "../contexts/authContext";
+import  { useAuth }  from "../contexts/authContext";
 
 // Menu dữ liệu (category -> brand) sẽ được render động từ backend.
 // Vì yêu cầu "xóa bỏ hết dữ liệu tĩnh ở FE" nên không còn hardcode navItems nữa.
@@ -143,7 +143,7 @@ function SearchOverlay({ open, onClose }) {
 
   return (
     <div
-      className={`fixed inset-0 z-[60] transition-all duration-300 ${
+      className={`fixed inset-0 z-60 transition-all duration-300 ${
         open
           ? "opacity-100 pointer-events-auto"
           : "opacity-0 pointer-events-none"
@@ -161,7 +161,7 @@ function SearchOverlay({ open, onClose }) {
           open ? "translate-y-0" : "-translate-y-full"
         }`}
       >
-        <div className="mx-auto max-w-[980px] px-6 py-5">
+        <div className="mx-auto max-w-980 px-6 py-5">
           <div className="flex items-center gap-3">
             <SearchIcon className="text-[#86868b] shrink-0" />
             <input
@@ -204,7 +204,7 @@ function SearchOverlay({ open, onClose }) {
                   key={term}
                   to={`/products?q=${encodeURIComponent(term)}`}
                   onClick={onClose}
-                  className="inline-block rounded-full bg-[#333336] px-[14px] py-[7px] text-[12px] text-[#d2d2d7] hover:bg-[#424245] transition-colors no-underline"
+                  className="inline-block rounded-full bg-[#333336] px-3.5 py-1.75 text-[12px] text-[#d2d2d7] hover:bg-[#424245] transition-colors no-underline"
                   style={{
                     fontFamily:
                       "SF Pro Text, system-ui, -apple-system, sans-serif",
@@ -230,12 +230,12 @@ function DesktopDropdown({ children, align = "center" }) {
     <div
       className={`absolute top-full pt-2 ${alignClass} opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out z-50`}
     >
-      <div className="bg-[#1d1d1f] rounded-[12px] py-2 min-w-[200px] shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+      <div className="bg-[#1d1d1f] rounded-xl py-2 min-w-50 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
         {children.map((child) => (
           <Link
             key={child.href}
             to={child.href}
-            className="block px-5 py-[9px] text-[12px] font-normal tracking-[-0.12px] text-[#d2d2d7] hover:text-white hover:bg-[#2a2a2c] transition-colors no-underline whitespace-nowrap"
+            className="block px-5 py-2.25 text-[12px] font-normal tracking-[-0.12px] text-[#d2d2d7] hover:text-white hover:bg-[#2a2a2c] transition-colors no-underline whitespace-nowrap"
             style={{
               fontFamily: "SF Pro Text, system-ui, -apple-system, sans-serif",
             }}
@@ -257,7 +257,7 @@ function MobileAccordion({ item, onNavigate }) {
       <Link
         to={item.href}
         onClick={onNavigate}
-        className="block py-[10px] text-[17px] font-normal tracking-[-0.374px] text-white/90 hover:text-white transition-colors no-underline border-b border-[#333336]"
+        className="block py-2.5 text-[17px] font-normal tracking-[-0.374px] text-white/90 hover:text-white transition-colors no-underline border-b border-[#333336]"
         style={{
           fontFamily: "SF Pro Text, system-ui, -apple-system, sans-serif",
         }}
@@ -271,7 +271,7 @@ function MobileAccordion({ item, onNavigate }) {
     <div className="border-b border-[#333336]">
       <button
         onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between py-[10px] text-[17px] font-normal tracking-[-0.374px] text-white/90 hover:text-white transition-colors cursor-pointer bg-transparent border-none outline-none"
+        className="flex w-full items-center justify-between py-2.5 text-[17px] font-normal tracking-[-0.374px] text-white/90 hover:text-white transition-colors cursor-pointer bg-transparent border-none outline-none"
         style={{
           fontFamily: "SF Pro Text, system-ui, -apple-system, sans-serif",
         }}
@@ -286,7 +286,7 @@ function MobileAccordion({ item, onNavigate }) {
 
       <div
         className={`overflow-hidden transition-all duration-300 ease-in-out ${
-          open ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+          open ? "max-h-125 opacity-100" : "max-h-0 opacity-0"
         }`}
       >
         <div className="pl-4 pb-2">
@@ -295,7 +295,7 @@ function MobileAccordion({ item, onNavigate }) {
               key={child.href}
               to={child.href}
               onClick={onNavigate}
-              className="block py-[8px] text-[14px] font-normal tracking-[-0.224px] text-[#86868b] hover:text-white transition-colors no-underline"
+              className="block py-2 text-[14px] font-normal tracking-[-0.224px] text-[#86868b] hover:text-white transition-colors no-underline"
               style={{
                 fontFamily: "SF Pro Text, system-ui, -apple-system, sans-serif",
               }}
@@ -319,7 +319,7 @@ export default function Header() {
 
   const [categories, setCategories] = React.useState([]); // Dữ liệu category (kèm brands) từ BE
   const [loadingCategories, setLoadingCategories] = React.useState(true); // Loading menu
-  const [errorCategories, setErrorCategories] = React.useState(null); // Lỗi khi fetch menu
+  const [setErrorCategories] = React.useState(null); // Lỗi khi fetch menu
 
   // Số lượng sản phẩm trong giỏ hàng (hiển thị badge trên icon giỏ hàng)
   const [cartCount, setCartCount] = useState(0);
@@ -356,7 +356,7 @@ export default function Header() {
         0,
       );
       setCartCount(total);
-    } catch (e) {
+    } catch{
       // Lỗi fetch (mạng, 401, 5xx...) => không hiện badge
       setCartCount(0);
     }
@@ -364,7 +364,6 @@ export default function Header() {
 
   // Fetch lại số lượng mỗi khi trạng thái auth hoặc đường dẫn thay đổi
   useEffect(() => {
-    fetchCartCount();
   }, [fetchCartCount, location.pathname]);
 
   // Lắng nghe sự kiện "cart:updated" để cập nhật badge ngay khi
@@ -398,7 +397,7 @@ export default function Header() {
     };
 
     fetchCategories(); // Gọi fetch 1 lần khi component mount
-  }, []);
+  }, [setErrorCategories]); // Chỉ chạy 1 lần khi mount, không phụ thuộc gì khác
 
   /* Track scroll for subtle shadow on sticky nav */
   useEffect(() => {
@@ -427,7 +426,7 @@ export default function Header() {
         }}
       >
         {/* ─── TOP PROMO BAR ─── */}
-        <div className="bg-[#0066cc] text-white text-center py-[6px] text-[12px] font-normal tracking-[-0.12px] leading-none hidden sm:block">
+        <div className="bg-[#0066cc] text-white text-center py-1.5 text-[12px] font-normal tracking-[-0.12px] leading-none hidden sm:block">
           Miễn phí giao hàng cho đơn từ 500.000₫&nbsp;&nbsp;|&nbsp;&nbsp;Trả góp
           0% lãi suất
         </div>
@@ -437,19 +436,19 @@ export default function Header() {
         ═══════════════════════════════════════════ */}
         <nav
           id="global-nav"
-          className={`bg-black h-[44px] flex items-center transition-shadow duration-200 ${
+          className={`bg-black h-11 flex items-center transition-shadow duration-200 ${
             scrolled ? "shadow-[0_1px_0_rgba(255,255,255,0.08)]" : ""
           }`}
         >
-          <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 flex items-center justify-between">
+          <div className="w-full max-w-360 mx-auto px-4 sm:px-6 lg:px-10 flex items-center justify-between">
             {/* ── Logo ── */}
             <Link
               to="/"
-              className="flex items-center gap-[6px] text-white no-underline shrink-0"
+              className="flex items-center gap-1.5 text-white no-underline shrink-0"
               aria-label="Trang chủ TechStore"
             >
               {/* Stylized logo mark */}
-              <span className="inline-flex items-center justify-center w-[22px] h-[22px] rounded-[5px] bg-[#0066cc]">
+              <span className="inline-flex items-center justify-center w-5.5 h-5.5 rounded-[5px] bg-[#0066cc]">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                   <path
                     d="M13 3L4 14h7l-2 7 9-11h-7l2-7z"
@@ -466,7 +465,7 @@ export default function Header() {
             </Link>
 
             {/* ── Desktop Nav Links ── */}
-            <div className="hidden lg:flex items-center gap-[20px]">
+            <div className="hidden lg:flex items-center gap-5">
               {loadingCategories ? (
                 <span
                   className="text-[12px] font-normal tracking-[-0.12px] leading-none text-[#86868b]"
@@ -488,7 +487,7 @@ export default function Header() {
                     {/* Link cấp 1: nhấn vào category sẽ lọc theo cat=category.slug */}
                     <Link
                       to={`/products?cate=${encodeURIComponent(cate.slug)}`}
-                      className="text-[12px] font-normal tracking-[-0.12px] leading-none text-[#d2d2d7] hover:text-white transition-colors no-underline py-[14px] inline-block"
+                      className="text-[12px] font-normal tracking-[-0.12px] leading-none text-[#d2d2d7] hover:text-white transition-colors no-underline py-3.5 inline-block"
                     >
                       {cate.name}
                     </Link>
@@ -516,7 +515,7 @@ export default function Header() {
             </div>
 
             {/* ── Right Actions ── */}
-            <div className="flex items-center gap-[12px]">
+            <div className="flex items-center gap-3">
               {/* Search */}
               <button
                 id="search-toggle"
@@ -536,7 +535,7 @@ export default function Header() {
                 <BagIcon />
                 {/* Badge hiển thị số lượng sản phẩm trong giỏ (chỉ hiện khi > 0) */}
                 {cartCount > 0 && (
-                  <span className="absolute -top-[3px] -right-[5px] w-[14px] h-[14px] rounded-full bg-[#0066cc] text-white text-[9px] font-semibold flex items-center justify-center leading-none">
+                  <span className="absolute -top-0.75 -right-1.25 w-3.5 h-3.5 rounded-full bg-[#0066cc] text-white text-[9px] font-semibold flex items-center justify-center leading-none">
                     {cartCount > 99 ? "99+" : cartCount}
                   </span>
                 )}
@@ -585,14 +584,14 @@ export default function Header() {
         ═══════════════════════════════════════════ */}
         <div
           id="sub-nav"
-          className="hidden lg:block h-[52px] border-b border-[#e0e0e0]"
+          className="hidden lg:block h-13 border-b border-[#e0e0e0]"
           style={{
             backgroundColor: "rgba(245, 245, 247, 0.80)",
             backdropFilter: "saturate(180%) blur(20px)",
             WebkitBackdropFilter: "saturate(180%) blur(20px)",
           }}
         >
-          <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 h-full flex items-center justify-between">
+          <div className="w-full max-w-360 mx-auto px-4 sm:px-6 lg:px-10 h-full flex items-center justify-between">
             {/* Left: category name */}
             <span
               className="text-[21px] font-semibold tracking-[0.231px] leading-[1.19] text-[#1d1d1f]"
@@ -605,7 +604,7 @@ export default function Header() {
             </span>
 
             {/* Right: utility links + CTA */}
-            <div className="flex items-center gap-[20px]">
+            <div className="flex items-center gap-5">
               <Link
                 to="/products?sale=true"
                 className="text-[14px] font-normal tracking-[-0.224px] leading-[1.29] text-[#1d1d1f] hover:text-[#0066cc] transition-colors no-underline"
@@ -622,7 +621,7 @@ export default function Header() {
               {/* Primary CTA */}
               <Link
                 to="/products"
-                className="inline-flex items-center rounded-full bg-[#0066cc] text-white text-[17px] font-normal tracking-[-0.374px] leading-[1.47] px-[22px] py-[8px] hover:bg-[#0071e3] active:scale-95 transition-all no-underline"
+                className="inline-flex items-center rounded-full bg-[#0066cc] text-white text-[17px] font-normal tracking-[-0.374px] leading-[1.47] px-5.5 py-2 hover:bg-[#0071e3] active:scale-95 transition-all no-underline"
               >
                 Mua ngay
               </Link>
@@ -647,7 +646,7 @@ export default function Header() {
         {/* Drawer panel */}
         <div
           id="mobile-drawer"
-          className={`fixed top-0 right-0 h-full w-[300px] max-w-[85vw] bg-[#1d1d1f] z-50 lg:hidden transition-transform duration-300 ease-out overflow-y-auto ${
+          className={`fixed top-0 right-0 h-full w-75 max-w-[85vw] bg-[#1d1d1f] z-50 lg:hidden transition-transform duration-300 ease-out overflow-y-auto ${
             mobileOpen ? "translate-x-0" : "translate-x-full"
           }`}
         >
@@ -721,7 +720,7 @@ export default function Header() {
           {/* Nav items with accordion */}
           <div className="px-5 py-2">
             {loadingCategories ? (
-              <div className="py-[10px] text-white/70">
+              <div className="py-2.5 text-white/70">
                 Đang tải danh mục...
               </div>
             ) : (
@@ -759,7 +758,7 @@ export default function Header() {
             <Link
               to="/products"
               onClick={closeMobile}
-              className="flex items-center justify-center w-full rounded-full bg-[#0066cc] text-white text-[17px] font-normal tracking-[-0.374px] py-[11px] hover:bg-[#0071e3] active:scale-95 transition-all no-underline"
+              className="flex items-center justify-center w-full rounded-full bg-[#0066cc] text-white text-[17px] font-normal tracking-[-0.374px] py-2.75 hover:bg-[#0071e3] active:scale-95 transition-all no-underline"
               style={{
                 fontFamily: "SF Pro Text, system-ui, -apple-system, sans-serif",
               }}
@@ -779,7 +778,7 @@ export default function Header() {
                 key={link.label}
                 to={link.href}
                 onClick={closeMobile}
-                className="block py-[8px] text-[14px] font-normal tracking-[-0.224px] text-[#86868b] hover:text-white transition-colors no-underline"
+                className="block py-2 text-[14px] font-normal tracking-[-0.224px] text-[#86868b] hover:text-white transition-colors no-underline"
                 style={{
                   fontFamily:
                     "SF Pro Text, system-ui, -apple-system, sans-serif",

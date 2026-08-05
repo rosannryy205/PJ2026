@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import InlineAlert from "../components/InlineAlert";
 
 const SF_DISPLAY = "SF Pro Display, system-ui, -apple-system, sans-serif";
@@ -202,7 +202,7 @@ export default function Contact() {
     <main className="w-full flex-1 bg-[#ffffff]" style={{ fontFamily: SF_TEXT }}>
       {/* ─── Frosted Sub-Navigation ─── */}
       <nav
-        className="sticky z-40 h-[52px] w-full bg-[#f5f5f7]/80 backdrop-blur-[20px] border-b border-[#e0e0e0] flex items-center justify-between px-6 sm:px-12 md:px-16"
+        className="sticky z-40 h-13 w-full bg-[#f5f5f7]/80 backdrop-blur-[20px] border-b border-[#e0e0e0] flex items-center justify-between px-6 sm:px-12 md:px-16"
         style={{ top: `${headerHeight}px` }}
         aria-label="Sub Navigation"
       >
@@ -227,7 +227,7 @@ export default function Contact() {
           </a>
           <a
             href="#form"
-            className="hidden sm:inline-flex h-[28px] items-center px-4 rounded-full bg-[#0066cc] text-white text-[12px] font-normal hover:bg-[#0071e3] transition-colors active:scale-[0.95]"
+            className="hidden sm:inline-flex h-7 items-center px-4 rounded-full bg-[#0066cc] text-white text-[12px] font-normal hover:bg-[#0071e3] transition-colors active:scale-[0.95]"
           >
             Get Help
           </a>
@@ -236,7 +236,7 @@ export default function Contact() {
 
       {/* ─── Hero Section (Parchment Tile) ─── */}
       <section className="w-full bg-[#f5f5f7] py-16 sm:py-24 text-center px-6 sm:px-12">
-        <div className="max-w-[980px] mx-auto flex flex-col items-center">
+        <div className="max-w-245 mx-auto flex flex-col items-center">
           <h1
             className="text-[40px] md:text-[56px] font-semibold tracking-[-0.28px] sm:tracking-[-1.68px] leading-[1.07] text-[#1d1d1f]"
             style={{ fontFamily: SF_DISPLAY }}
@@ -251,7 +251,7 @@ export default function Contact() {
 
       {/* ─── Contact Form Section (White Tile) ─── */}
       <section id="form" className="w-full bg-[#ffffff] py-16 sm:py-24 px-6">
-        <div className="max-w-[640px] mx-auto">
+        <div className="max-w-160 mx-auto">
           <div className="text-center mb-10">
             <h2
               className="text-[28px] md:text-[34px] font-semibold tracking-[-0.374px] text-[#1d1d1f]"
@@ -292,7 +292,7 @@ export default function Contact() {
                 value={formData.name}
                 onChange={handleChange}
                 disabled={submitting}
-                className="h-[44px] px-4 text-[17px] leading-[1.47] tracking-[-0.374px] text-[#1d1d1f] bg-[#f5f5f7] rounded-[8px] border border-[#e0e0e0] outline-none transition-all duration-200 placeholder:text-[#7a7a7a] focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20 focus:bg-white disabled:opacity-60"
+                className="h-11 px-4 text-[17px] leading-[1.47] tracking-[-0.374px] text-[#1d1d1f] bg-[#f5f5f7] rounded-lg border border-[#e0e0e0] outline-none transition-all duration-200 placeholder:text-[#7a7a7a] focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20 focus:bg-white disabled:opacity-60"
               />
             </div>
 
@@ -312,7 +312,7 @@ export default function Contact() {
                 value={formData.email}
                 onChange={handleChange}
                 disabled={submitting}
-                className="h-[44px] px-4 text-[17px] leading-[1.47] tracking-[-0.374px] text-[#1d1d1f] bg-[#f5f5f7] rounded-[8px] border border-[#e0e0e0] outline-none transition-all duration-200 placeholder:text-[#7a7a7a] focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20 focus:bg-white disabled:opacity-60"
+                className="h-11 px-4 text-[17px] leading-[1.47] tracking-[-0.374px] text-[#1d1d1f] bg-[#f5f5f7] rounded-lg border border-[#e0e0e0] outline-none transition-all duration-200 placeholder:text-[#7a7a7a] focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20 focus:bg-white disabled:opacity-60"
               />
             </div>
 
@@ -331,7 +331,7 @@ export default function Contact() {
                   value={formData.topic}
                   onChange={handleChange}
                   disabled={submitting}
-                  className="w-full h-[44px] px-4 text-[17px] leading-[1.47] tracking-[-0.374px] text-[#1d1d1f] bg-[#f5f5f7] rounded-[8px] border border-[#e0e0e0] outline-none appearance-none transition-all duration-200 focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20 focus:bg-white disabled:opacity-60"
+                  className="w-full h-11 px-4 text-[17px] leading-[1.47] tracking-[-0.374px] text-[#1d1d1f] bg-[#f5f5f7] rounded-lg border border-[#e0e0e0] outline-none appearance-none transition-all duration-200 focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20 focus:bg-white disabled:opacity-60"
                 >
                   <option value="" disabled>Select a topic</option>
                   <option value="Product Support">Product Support & Inquiry</option>
@@ -374,7 +374,7 @@ export default function Contact() {
                 value={formData.message}
                 onChange={handleChange}
                 disabled={submitting}
-                className="p-4 text-[17px] leading-[1.47] tracking-[-0.374px] text-[#1d1d1f] bg-[#f5f5f7] rounded-[8px] border border-[#e0e0e0] outline-none transition-all duration-200 placeholder:text-[#7a7a7a] focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20 focus:bg-white resize-y min-h-[120px] disabled:opacity-60"
+                className="p-4 text-[17px] leading-[1.47] tracking-[-0.374px] text-[#1d1d1f] bg-[#f5f5f7] rounded-lg border border-[#e0e0e0] outline-none transition-all duration-200 placeholder:text-[#7a7a7a] focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20 focus:bg-white resize-y min-h-30 disabled:opacity-60"
               />
             </div>
 
@@ -382,7 +382,7 @@ export default function Contact() {
             <button
               type="submit"
               disabled={submitting}
-              className="mt-4 w-full h-[44px] rounded-full bg-[#0066cc] text-white text-[17px] font-normal tracking-[-0.374px] leading-[1.47] border-none cursor-pointer hover:bg-[#0071e3] active:scale-[0.95] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="mt-4 w-full h-11 rounded-full bg-[#0066cc] text-white text-[17px] font-normal tracking-[-0.374px] leading-[1.47] border-none cursor-pointer hover:bg-[#0071e3] active:scale-[0.95] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {submitting ? (
                 <>
@@ -418,7 +418,7 @@ export default function Contact() {
 
       {/* ─── Other Support Channels Section (Dark Tile) ─── */}
       <section id="channels" className="w-full bg-[#272729] py-16 sm:py-24 px-6 sm:px-12 md:px-16">
-        <div className="max-w-[1440px] mx-auto text-center">
+        <div className="max-w-360 mx-auto text-center">
           <h2
             className="text-[28px] md:text-[40px] font-semibold leading-[1.1] tracking-[-0.374px] text-white mb-12"
             style={{ fontFamily: SF_DISPLAY }}
@@ -428,7 +428,7 @@ export default function Contact() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
             {/* Phone Card */}
-            <article className="bg-[#2a2a2c] rounded-[18px] border border-[#333333] p-6 flex flex-col justify-between min-h-[220px] transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-[#444446]">
+            <article className="bg-[#2a2a2c] rounded-[18px] border border-[#333333] p-6 flex flex-col justify-between min-h-55 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-[#444446]">
               <div>
                 <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-6">
                   <PhoneIcon />
@@ -449,7 +449,7 @@ export default function Contact() {
             </article>
 
             {/* Location Card */}
-            <article className="bg-[#2a2a2c] rounded-[18px] border border-[#333333] p-6 flex flex-col justify-between min-h-[220px] transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-[#444446]">
+            <article className="bg-[#2a2a2c] rounded-[18px] border border-[#333333] p-6 flex flex-col justify-between min-h-55 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-[#444446]">
               <div>
                 <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-6">
                   <MapPinIcon />
@@ -470,7 +470,7 @@ export default function Contact() {
             </article>
 
             {/* Community Support */}
-            <article className="bg-[#2a2a2c] rounded-[18px] border border-[#333333] p-6 flex flex-col justify-between min-h-[220px] transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-[#444446]">
+            <article className="bg-[#2a2a2c] rounded-[18px] border border-[#333333] p-6 flex flex-col justify-between min-h-55 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-[#444446]">
               <div>
                 <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-6">
                   <ChatBubbleLeftRightIcon />
@@ -491,7 +491,7 @@ export default function Contact() {
             </article>
 
             {/* Enterprise Support */}
-            <article className="bg-[#2a2a2c] rounded-[18px] border border-[#333333] p-6 flex flex-col justify-between min-h-[220px] transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-[#444446]">
+            <article className="bg-[#2a2a2c] rounded-[18px] border border-[#333333] p-6 flex flex-col justify-between min-h-55 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-[#444446]">
               <div>
                 <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-6">
                   <BriefcaseIcon />
