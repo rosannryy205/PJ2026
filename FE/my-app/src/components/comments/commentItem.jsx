@@ -4,13 +4,10 @@ import {
   ChatBubbleOvalLeftIcon,
   UserCircleIcon,
 } from "@heroicons/react/24/outline";
-import {
-  HeartIcon as HeartIconSolid,
-  CheckBadgeIcon,
-} from "@heroicons/react/24/solid";
+import { CheckBadgeIcon } from "@heroicons/react/24/solid";
 import StarRating from "./starRating";
 
-// Hàm format thời gian tương đối
+// Hàm format thời gian tương đối.
 function formatRelativeTime(dateStr) {
   if (!dateStr) return "";
   const date = new Date(dateStr);
@@ -25,7 +22,6 @@ function formatRelativeTime(dateStr) {
   if (diffHours < 24) return `${diffHours} giờ trước`;
   if (diffDays < 7) return `${diffDays} ngày trước`;
 
-  // Format DD/MM/YYYY
   const d = date.getDate();
   const m = date.getMonth() + 1;
   const y = date.getFullYear();
@@ -34,10 +30,11 @@ function formatRelativeTime(dateStr) {
 
 /**
  * CommentItem
- * - Card hiển thị bình luận: avatar, tên, badge "Đã mua hàng", sao, ngày
- * - Body: nội dung + "Xem thêm/Thu gọn" nếu quá dài
- * - Actions: Like (Optimistic UI) + Reply (chỉ admin)
- * - Trạng thái isReplying riêng cho từng comment
+ * - Card hiển thị bình luận: avatar, tên, badge "Đã mua hàng", sao, ngày.
+ * - Body: nội dung + "Xem thêm/Thu gọn" nếu quá dài.
+ * - Media: hiển thị ảnh/video đính kèm.
+ * - Trạng thái pending: làm mờ + badge "Chờ admin duyệt".
+ * - Actions: Like + Reply (chỉ admin).
  */
 export default function CommentItem({
   comment,
@@ -56,13 +53,13 @@ export default function CommentItem({
     ? comment?.content
     : (comment?.content || "").slice(0, MAX_LENGTH) + (isLong ? "..." : "");
 
-  const hasLiked = comment?.userLiked || false;
   const likeCount = comment?.likeCount || 0;
+  const isPending = !!comment?.isPending;
+  const media = comment?.media || [];
 
   const handleLike = () => {
     if (isLiking) return;
     setIsLiking(true);
-    // Optimistic UI: gọi callback, parent sẽ cập nhật state tức thì
     onLike?.(comment);
     setTimeout(() => setIsLiking(false), 300);
   };
@@ -76,7 +73,13 @@ export default function CommentItem({
   };
 
   return (
-    <article className="w-full rounded-[18px] border border-[#e0e0e0] bg-white p-5 sm:p-6">
+    <article
+      className={[
+        "w-full rounded-[18px] border bg-white p-5 sm:p-6",
+        isPending ? "border-[#e0e0e0] opacity-60" : "border-[#e0e0e0]",
+      ].join(" ")}
+      aria-label={isPending ? "Đánh giá đang chờ duyệt" : "Đánh giá"}
+    >
       {/* Header */}
       <div className="flex items-start gap-3 sm:gap-4">
         {/* Avatar */}
@@ -103,10 +106,17 @@ export default function CommentItem({
             <span className="text-[15px] sm:text-[17px] font-semibold tracking-[-0.374px] text-[#1d1d1f]">
               {comment?.user?.name || "Người dùng"}
             </span>
+
             {comment?.hasPurchased && (
               <span className="inline-flex items-center gap-1 rounded-full bg-[#e8f5e9] px-2 py-0.5 text-[11px] font-semibold text-[#2e7d32]">
                 <CheckBadgeIcon className="h-3.5 w-3.5" aria-hidden="true" />
                 Đã mua hàng
+              </span>
+            )}
+
+            {isPending && (
+              <span className="inline-flex items-center rounded-full bg-[#fff4e5] px-2 py-0.5 text-[11px] font-semibold text-[#b26a00]">
+                Chờ admin duyệt
               </span>
             )}
           </div>
@@ -122,6 +132,11 @@ export default function CommentItem({
 
       {/* Body */}
       <div className="mt-4 pl-0 sm:pl-16">
+        {comment?.title && (
+          <p className="text-[15px] sm:text-[17px] font-semibold tracking-[-0.374px] leading-[1.47] text-[#1d1d1f]">
+            {comment.title}
+          </p>
+        )}
         <p className="text-[15px] sm:text-[17px] font-normal tracking-[-0.374px] leading-[1.47] text-[#1d1d1f] wrap-break-word">
           {displayContent}
         </p>
@@ -137,6 +152,43 @@ export default function CommentItem({
         )}
       </div>
 
+      {/* Media (ảnh/video) */}
+      {media.length > 0 && (
+        <div className="mt-4 pl-0 sm:pl-16">
+          <div className="flex flex-wrap gap-3">
+            {media.map((m) => (
+              <div
+                key={m.id}
+                className="h-24 w-24 sm:h-28 sm:w-28 rounded-[11px] overflow-hidden border border-[#e0e0e0] bg-white"
+              >
+                {m.type === "video" ? (
+                  <video
+                    src={m.url}
+                    controls
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <img
+                    src={m.url}
+                    alt="Ảnh đánh giá"
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Thông báo pending */}
+      {isPending && (
+        <p className="mt-3 pl-0 sm:pl-16 text-[13px] text-[#b26a00]">
+          Đánh giá này đang chờ admin duyệt và sẽ hiển thị công khai sau khi
+          được duyệt.
+        </p>
+      )}
+
       {/* Actions */}
       <div className="mt-4 flex items-center gap-4 pl-0 sm:pl-16">
         {/* Like */}
@@ -144,24 +196,17 @@ export default function CommentItem({
           type="button"
           onClick={handleLike}
           disabled={isLiking}
-          aria-label={hasLiked ? "Bỏ thích bình luận" : "Thích bình luận"}
-          aria-pressed={hasLiked}
+          aria-label="Thích bình luận"
           className={[
             "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-medium transition-all",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2",
-            hasLiked
-              ? "bg-[#fee2e2] text-[#dc2626]"
-              : "bg-[#f5f5f7] text-[#7a7a7a] hover:bg-[#e8e8ed] hover:text-[#1d1d1f]",
+            "bg-[#f5f5f7] text-[#7a7a7a] hover:bg-[#e8e8ed] hover:text-[#1d1d1f]",
             isLiking
               ? "opacity-70 cursor-wait"
               : "cursor-pointer active:scale-95",
           ].join(" ")}
         >
-          {hasLiked ? (
-            <HeartIconSolid className="h-4 w-4" aria-hidden="true" />
-          ) : (
-            <HeartIcon className="h-4 w-4" aria-hidden="true" />
-          )}
+          <HeartIcon className="h-4 w-4" aria-hidden="true" />
           <span>{likeCount}</span>
         </button>
 
@@ -213,6 +258,27 @@ export default function CommentItem({
             </button>
           </div>
         </form>
+      )}
+
+      {/* Reply list */}
+      {comment?.replies?.length > 0 && (
+        <div className="mt-4 pl-0 sm:pl-16 space-y-3">
+          {comment.replies.map((rep) => (
+            <div key={rep.id} className="rounded-[11px] bg-[#f5f5f7] px-4 py-3">
+              <div className="flex items-center gap-2">
+                <span className="text-[14px] font-semibold text-[#1d1d1f]">
+                  {rep?.user?.name || "Admin"}
+                </span>
+                <span className="text-[12px] text-[#7a7a7a]">
+                  {formatRelativeTime(rep.createdAt)}
+                </span>
+              </div>
+              <p className="mt-1 text-[14px] text-[#1d1d1f] leading-[1.47]">
+                {rep.content}
+              </p>
+            </div>
+          ))}
+        </div>
       )}
     </article>
   );

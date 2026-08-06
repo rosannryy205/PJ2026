@@ -1,129 +1,22 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import CommentForm from "./commentForm";
 import CommentItem from "./commentItem";
 
-// Mock data mẫu (tạm thời, chưa cần đụng BE)
-const MOCK_COMMENTS = [
-  {
-    id: 1,
-    user: {
-      name: "Nguyễn Văn An",
-      avatar: "",
-    },
-    rating: 5,
-    content:
-      "Sản phẩm rất tốt, chất lượng vượt trội so với giá tiền. Tôi rất hài lòng với trải nghiệm sử dụng. Máy chạy nhanh, mượt mà, pin trâu, camera chụp đẹp. Đặc biệt màn hình hiển thị rất sắc nét và sống động. Tôi sẽ giới thiệu cho bạn bè và người thân của mình sản phẩm tuyệt vời này. Đây thực sự là một trong những sản phẩm đáng mua nhất trong tầm giá.",
-    hasPurchased: true,
-    likeCount: 12,
-    userLiked: false,
-    createdAt: "2024-12-15T10:30:00",
-    replies: [],
-  },
-  {
-    id: 2,
-    user: {
-      name: "Trần Thị Bình",
-      avatar: "",
-    },
-    rating: 4,
-    content:
-      "Sản phẩm tốt, giao hàng nhanh, đóng gói cẩn thận. Tuy nhiên màu sắc thực tế hơi khác so với hình ảnh trên website. Tổng thể vẫn đáng mua.",
-    hasPurchased: true,
-    likeCount: 8,
-    userLiked: false,
-    createdAt: "2024-12-10T08:45:00",
-    replies: [],
-  },
-  {
-    id: 3,
-    user: {
-      name: "Lê Văn Cường",
-      avatar: "",
-    },
-    rating: 5,
-    content:
-      "Sản phẩm tuyệt vời! Chất lượng xứng đáng với số tiền bỏ ra. Dùng được 2 tuần rồi mà vẫn hoạt động hoàn hảo. Đáng mua!",
-    hasPurchased: true,
-    likeCount: 25,
-    userLiked: true,
-    createdAt: "2024-12-05T14:20:00",
-    replies: [],
-  },
-  {
-    id: 4,
-    user: {
-      name: "Phạm Minh Đức",
-      avatar: "",
-    },
-    rating: 3,
-    content:
-      "Sản phẩm ổn, nhưng thời gian giao hàng hơi lâu. Chất lượng sản phẩm tạm ổn so với giá.",
-    hasPurchased: true,
-    likeCount: 3,
-    userLiked: false,
-    createdAt: "2024-11-28T09:10:00",
-    replies: [],
-  },
-  {
-    id: 5,
-    user: {
-      name: "Hoàng Thu Hà",
-      avatar: "",
-    },
-    rating: 5,
-    content:
-      "Rất hài lòng với sản phẩm! Shop tư vấn nhiệt tình, sản phẩm đúng như mô tả. Sẽ ủng hộ shop dài dài.",
-    hasPurchased: true,
-    likeCount: 18,
-    userLiked: false,
-    createdAt: "2024-11-20T16:00:00",
-    replies: [],
-  },
-  {
-    id: 6,
-    user: {
-      name: "Vũ Quốc Khánh",
-      avatar: "",
-    },
-    rating: 4,
-    content:
-      "Mua lần thứ 2 rồi, chất lượng ổn định. Giá cả hợp lý, dịch vụ tốt. Mong shop thêm nhiều ưu đãi hơn.",
-    hasPurchased: true,
-    likeCount: 10,
-    userLiked: false,
-    createdAt: "2024-11-15T11:30:00",
-    replies: [],
-  },
-  {
-    id: 7,
-    user: {
-      name: "Đặng Thị Mai",
-      avatar: "",
-    },
-    rating: 2,
-    content:
-      "Sản phẩm không như mong đợi. Chất lượng kém hơn so với mô tả. Hy vọng shop cải thiện chất lượng.",
-    hasPurchased: true,
-    likeCount: 5,
-    userLiked: false,
-    createdAt: "2024-11-10T13:40:00",
-    replies: [],
-  },
-];
+const API_BASE_URL = "http://localhost:3000";
 
-// Số comment hiển thị mỗi lần load
+// Số comment hiển thị mỗi lần load.
 const INITIAL_VISIBLE_COUNT = 5;
 const LOAD_MORE_COUNT = 5;
 
 /**
  * CommentSection
- * - Component tổng quản lý state & data
- * - Loading state: Skeleton UI
- * - Empty state: chưa có bình luận
- * - Error state: lỗi tải dữ liệu
- * - Load more: hiển thị giới hạn + nút xem thêm
- * - Sắp xếp sao từ cao xuống thấp
- * - Optimistic UI cho Like
+ * - Component tổng quản lý state & data, gọi API thật từ backend.
+ * - Loading state: Skeleton UI.
+ * - Empty state: chưa có bình luận.
+ * - Error state: lỗi tải dữ liệu.
+ * - Load more: hiển thị giới hạn + nút xem thêm.
+ * - Chỉ admin mới thấy nút reply (isAdmin từ user.role).
+ * - Comment "pending" hiển thị mờ + badge chờ duyệt.
  */
 export default function CommentSection({
   productId,
@@ -138,32 +31,62 @@ export default function CommentSection({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isAdmin = user?.role === "admin";
+  const currentUserId = user?.id;
 
-  // Kiểm tra user đã mua hàng chưa (demo: giả định true khi đã đăng nhập)
+  // Kiểm tra user đã mua hàng chưa (mặc định false khi chưa đăng nhập).
   const hasPurchased = isAuthenticated;
 
-  // Load comments (mock data)
-  useEffect(() => {
-    // Giả lập delay API
-    const timer = setTimeout(() => {
-      try {
-        setComments([...MOCK_COMMENTS]);
-        setLoading(false);
-      } catch {
-        setError("Không thể tải bình luận. Vui lòng thử lại.");
-        setLoading(false);
-      }
-    }, 800);
-
-    return () => clearTimeout(timer);
+  // Tải danh sách review từ backend.
+  const loadReviews = useCallback(async () => {
+    if (!productId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/api/reviews?productId=${productId}`,
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      setComments(json?.data ?? []);
+    } catch {
+      setError("Không thể tải bình luận. Vui lòng thử lại.");
+      setComments([]);
+    } finally {
+      setLoading(false);
+    }
   }, [productId]);
 
-  // Sắp xếp sao từ cao xuống thấp
-  const sortedComments = useMemo(() => {
-    return [...comments].sort((a, b) => b.rating - a.rating);
-  }, [comments]);
+  useEffect(() => {
+    const controller = new AbortController();
+    const fetchReviews = async () => {
+      if (!productId) return;
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch(
+          `${API_BASE_URL}/api/reviews?productId=${productId}`,
+          { signal: controller.signal },
+        );
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        setComments(json?.data ?? []);
+      } catch (e) {
+        if (e?.name === "AbortError") return;
+        setError("Không thể tải bình luận. Vui lòng thử lại.");
+        setComments([]);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    };
 
-  // Comment hiển thị (giới hạn)
+    fetchReviews();
+    return () => controller.abort();
+  }, [productId]);
+
+  // Sắp xếp theo thời gian mới nhất (backend đã sắp, giữ nguyên).
+  const sortedComments = useMemo(() => comments, [comments]);
+
+  // Comment hiển thị (giới hạn).
   const visibleComments = useMemo(
     () => sortedComments.slice(0, visibleCount),
     [sortedComments, visibleCount],
@@ -175,75 +98,85 @@ export default function CommentSection({
     setVisibleCount((prev) => prev + LOAD_MORE_COUNT);
   };
 
-  // Submit comment mới
-  const handleSubmitComment = ({ rating, content }) => {
+  // Gửi comment mới lên backend (kèm media).
+  const handleSubmitComment = async ({ rating, formData }) => {
     setIsSubmitting(true);
+    try {
+      formData.append("productId", String(productId));
+      formData.append("rating", String(rating));
 
-    // Giả lập API call
-    setTimeout(() => {
-      const newComment = {
-        id: Date.now(),
-        user: {
-          name: user?.name || "Người dùng",
-          avatar: user?.avatar || "",
-        },
-        rating,
-        content,
-        hasPurchased: true,
-        likeCount: 0,
-        userLiked: false,
-        createdAt: new Date().toISOString(),
-        replies: [],
-      };
+      const res = await fetch(`${API_BASE_URL}/api/reviews`, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
 
-      setComments((prev) => [newComment, ...prev]);
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(payload?.message || `HTTP ${res.status}`);
+      }
+
+      // Tải lại danh sách để hiển thị comment mới (pending).
+      await loadReviews();
+    } catch (e) {
+      setError(e?.message || "Không thể gửi bình luận.");
+    } finally {
       setIsSubmitting(false);
-    }, 500);
+    }
   };
 
-  // Optimistic UI cho Like
-  const handleLike = (comment) => {
-    setComments((prev) =>
-      prev.map((c) =>
-        c.id === comment.id
-          ? {
-              ...c,
-              userLiked: !c.userLiked,
-              likeCount: c.userLiked
-                ? Math.max(0, (c.likeCount || 0) - 1)
-                : (c.likeCount || 0) + 1,
-            }
-          : c,
-      ),
-    );
+  // Thích comment.
+  const handleLike = async (comment) => {
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/api/reviews/${comment.id}/like`,
+        {
+          method: "POST",
+          credentials: "include",
+        },
+      );
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(payload?.message || `HTTP ${res.status}`);
+      }
+
+      // Cập nhật likeCount từ server.
+      setComments((prev) =>
+        prev.map((c) =>
+          c.id === comment.id
+            ? { ...c, likeCount: payload?.data?.likeCount ?? c.likeCount }
+            : c,
+        ),
+      );
+    } catch {
+      // Bỏ qua lỗi like, không làm hỏng UX.
+    }
   };
 
-  // Reply (admin)
-  const handleReply = (comment, replyText) => {
-    setComments((prev) =>
-      prev.map((c) =>
-        c.id === comment.id
-          ? {
-              ...c,
-              replies: [
-                ...(c.replies || []),
-                {
-                  id: Date.now(),
-                  user: {
-                    name: user?.name || "Admin",
-                    avatar: user?.avatar || "",
-                  },
-                  content: replyText,
-                  createdAt: new Date().toISOString(),
-                },
-              ],
-            }
-          : c,
-      ),
-    );
+  // Admin reply.
+  const handleReply = async (comment, replyText) => {
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/api/reviews/${comment.id}/replies`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: replyText }),
+        },
+      );
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(payload?.message || `HTTP ${res.status}`);
+      }
+      // Tải lại để hiển thị reply mới.
+      await loadReviews();
+    } catch {
+      // Bỏ qua lỗi reply.
+    }
   };
 
-  // Skeleton loading
+  // Skeleton loading.
   if (loading) {
     return (
       <div
@@ -279,8 +212,8 @@ export default function CommentSection({
     );
   }
 
-  // Error state
-  if (error) {
+  // Error state.
+  if (error && comments.length === 0) {
     return (
       <div
         className="w-full rounded-[18px] border border-[#e0e0e0] bg-[#fafafc] p-8 text-center"
@@ -293,14 +226,7 @@ export default function CommentSection({
         </p>
         <button
           type="button"
-          onClick={() => {
-            setLoading(true);
-            setError(null);
-            setTimeout(() => {
-              setComments([...MOCK_COMMENTS]);
-              setLoading(false);
-            }, 500);
-          }}
+          onClick={loadReviews}
           className="mt-4 inline-flex items-center justify-center rounded-full bg-[#0066cc] text-white text-[14px] font-normal px-5 py-2 hover:bg-[#0071e3] active:scale-95 transition-all cursor-pointer border-none outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2"
           style={{
             fontFamily: "SF Pro Text, system-ui, -apple-system, sans-serif",
@@ -334,6 +260,13 @@ export default function CommentSection({
         </span>
       </div>
 
+      {/* Thông báo lỗi khi gửi (nhưng vẫn còn comment cũ) */}
+      {error && comments.length > 0 && (
+        <div className="mt-4 rounded-[11px] bg-red-50 px-4 py-3 text-[14px] text-red-700">
+          {error}
+        </div>
+      )}
+
       {/* Form bình luận */}
       <div className="mt-6">
         <CommentForm
@@ -348,7 +281,7 @@ export default function CommentSection({
       {/* Danh sách bình luận */}
       <div className="mt-8 space-y-4">
         {visibleComments.length === 0 ? (
-          // Empty state
+          // Empty state.
           <div className="rounded-[18px] border border-[#e0e0e0] bg-[#fafafc] p-8 text-center">
             <p className="text-[17px] font-normal tracking-[-0.374px] leading-[1.47] text-[#1d1d1f]">
               Chưa có đánh giá nào.
@@ -364,6 +297,7 @@ export default function CommentSection({
                 key={comment.id}
                 comment={comment}
                 currentUser={user}
+                currentUserId={currentUserId}
                 onLike={handleLike}
                 onReply={handleReply}
                 isAdmin={isAdmin}

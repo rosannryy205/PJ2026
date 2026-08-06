@@ -1,3 +1,5 @@
+const { DataTypes } = require("sequelize");
+const { sequelize } = require("../config/db");
 const Brand = require("./brandModel");
 const Product = require("./productModel");
 const ProductVariant = require("./productVariantModel");
@@ -9,8 +11,9 @@ const CartItem = require("./cartItemModel");
 const Order = require("./orderModel");
 const OrderItem = require("./orderItemsModel");
 const User = require("./userModel");
-const { DataTypes } = require("sequelize");
-const { sequelize } = require("../config/db");
+const Review = require("./reviewModel");
+const ReviewMedia = require("./reviewMediaModel");
+const ReviewReplies = require("./reviewReplyModel");
 
 // 1 Thương hiệu có nhiều sản phẩm
 Brand.hasMany(Product, { foreignKey: "brand_id", as: "products" });
@@ -18,10 +21,7 @@ Product.belongsTo(Brand, { foreignKey: "brand_id", as: "brand" });
 
 // 1 Sản phẩm có nhiều biến thể
 Product.hasMany(ProductVariant, { foreignKey: "product_id", as: "variants" });
-ProductVariant.belongsTo(Product, {
-  foreignKey: "product_id",
-  as: "product",
-});
+ProductVariant.belongsTo(Product, { foreignKey: "product_id", as: "product" });
 
 // 1 Sản phẩm có nhiều hình ảnh
 Product.hasMany(ProductImage, { foreignKey: "product_id", as: "images" });
@@ -76,6 +76,36 @@ OrderItem.belongsTo(ProductVariant, {
   as: "variant",
 });
 
+// 1 Product có nhiều Review
+Product.hasMany(Review, { foreignKey: "product_id", as: "reviews" });
+Review.belongsTo(Product, { foreignKey: "product_id", as: "product" });
+
+// 1 ProductVariant có nhiều Review
+ProductVariant.hasMany(Review, {
+  foreignKey: "product_variant_id",
+  as: "variant_reviews",
+});
+Review.belongsTo(ProductVariant, {
+  foreignKey: "product_variant_id",
+  as: "variant",
+});
+
+// 1 User có nhiều Review
+User.hasMany(Review, { foreignKey: "user_id", as: "user_reviews" });
+Review.belongsTo(User, { foreignKey: "user_id", as: "user" });
+
+// 1 Review có nhiều ReviewMedia
+Review.hasMany(ReviewMedia, { foreignKey: "review_id", as: "media" });
+ReviewMedia.belongsTo(Review, { foreignKey: "review_id", as: "review" });
+
+// 1 Review có nhiều ReviewReplies
+Review.hasMany(ReviewReplies, { foreignKey: "review_id", as: "replies" });
+ReviewReplies.belongsTo(Review, { foreignKey: "review_id", as: "review" });
+
+// 1 User có nhiều ReviewReplies (người trả lời)
+User.hasMany(ReviewReplies, { foreignKey: "replier_id", as: "review_replies" });
+ReviewReplies.belongsTo(User, { foreignKey: "replier_id", as: "replier" });
+
 module.exports = {
   sequelize,
   Brand,
@@ -89,4 +119,7 @@ module.exports = {
   Order,
   OrderItem,
   User,
+  Review,
+  ReviewMedia,
+  ReviewReplies,
 };

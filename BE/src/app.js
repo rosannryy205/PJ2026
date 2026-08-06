@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 const app = express();
 const userRoutes = require("./routers/userRouter"); //gọi các route từ userRouter.js
 const productRoutes = require("./routers/productRouter"); //gọi các route từ productRouter.js
@@ -53,6 +54,13 @@ app.use("/api/cart", cartRoutes);
 // Định nghĩa route cho đơn hàng
 const orderRoutes = require("./routers/orderRouter");
 app.use("/api/orders", orderRoutes);
+
+// Định nghĩa route cho đánh giá sản phẩm (comment)
+const reviewRoutes = require("./routers/reviewRouter");
+app.use("/api/reviews", reviewRoutes);
+
+// Serve file tĩnh (ảnh/video của review) từ thư mục uploads
+app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
 // Route mặc định để kiểm tra API
 app.get("/", (req, res) => {
