@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const {
   Product,
   ProductVariant,
@@ -172,10 +173,80 @@ const getProductById = async (id) => {
   return product;
 };
 
+async function getProductRelated(productId, limit = 4) {
+  try {
+    // Giới hạn an toàn: 1 <= limit <= 20
+    const safeLimit = Math.min(Math.max(1, Number(limit) || 4), 20);
+
+    const product = await Product.findByPk(productId);
+    if (!product) return [];
+
+    // 1. Ưu tiên cùng brand, còn bán, sắp theo lượt bán nhiều nhất
+    let related = await Product.findAll({
+      where: {
+        brand_id: product.brand_id,
+        id: { [Op.ne]: productId },
+        status: 1,
+      },
+      include: [
+        {
+          model: Brand,
+          as: "brand",
+        },
+        {
+          model: ProductVariant,
+          as: "variants",
+        },
+        {
+          model: ProductImage,
+          as: "images",
+        },
+      ],
+      order: [["sold_count", "DESC"]],
+      limit: safeLimit,
+    });
+
+    // 2. Nếu cùng brand chưa đủ, bù thêm sản phẩm cùng category (tránh trùng id)
+    if (related.length < safeLimit) {
+      const excludedIds = related.map((r) => r.id);
+      const extra = await Product.findAll({
+        where: {
+          category_id: product.category_id,
+          brand_id: { [Op.ne]: product.brand_id },
+          id: { [Op.notIn]: [productId, ...excludedIds] },
+          status: 1,
+        },
+        include: [
+          {
+            model: Brand,
+            as: "brand",
+          },
+          {
+            model: ProductVariant,
+            as: "variants",
+          },
+          {
+            model: ProductImage,
+            as: "images",
+          },
+        ],
+        order: [["sold_count", "DESC"]],
+        limit: safeLimit - related.length,
+      });
+      related = [...related, ...extra];
+    }
+
+    return related;
+  } catch (error) {
+    throw error;
+  }
+}
+
 module.exports = {
   getAllProducts,
   getAllProductFeatures,
   getAllProductPopular,
   getAllProductNewArrival,
   getProductById,
+  getProductRelated,
 };

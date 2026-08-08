@@ -7,7 +7,9 @@ const productRoutes = require("./routers/productRouter"); //gọi các route t�
 const categoryRoutes = require("./routers/categoryRouter"); //gọi các route từ categoryRouter.js
 const registerRoutes = require("./routers/registerRouter"); //gọi các route từ registerRouter.js
 const authRoutes = require("./routers/authRouter"); // auth module
-
+const cartRoutes = require("./routers/cartRouter");
+const reviewRoutes = require("./routers/reviewRouter");
+const orderRoutes = require("./routers/orderRouter");
 // CORS: cho phép FE chạy tại các origin được cấu hình trong .env
 // Mặc định: http://localhost:5173, http://localhost:5174, http://localhost:5175, http://localhost:5176
 const corsOrigins = process.env.CORS_ORIGIN
@@ -48,15 +50,12 @@ app.use("/api/register", registerRoutes);
 app.use("/api/auth", authRoutes);
 
 // Định nghĩa route cho giỏ hàng
-const cartRoutes = require("./routers/cartRouter");
 app.use("/api/cart", cartRoutes);
 
 // Định nghĩa route cho đơn hàng
-const orderRoutes = require("./routers/orderRouter");
 app.use("/api/orders", orderRoutes);
 
 // Định nghĩa route cho đánh giá sản phẩm (comment)
-const reviewRoutes = require("./routers/reviewRouter");
 app.use("/api/reviews", reviewRoutes);
 
 // Serve file tĩnh (ảnh/video của review) từ thư mục uploads

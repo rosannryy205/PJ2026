@@ -75,6 +75,9 @@ export default function Product_detail() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // State riêng cho sản phẩm liên quan (tránh làm hỏng trang chính khi lỗi).
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [relatedError, setRelatedError] = useState(null);
 
   // State biến thể người dùng chọn.
   // Mặc định chọn biến thể đầu tiên (sẽ được sync sau khi fetch xong).
@@ -165,6 +168,36 @@ export default function Product_detail() {
       }
     };
 
+    const fetchRelatedProducts = async () => {
+      try {
+        setRelatedError(null);
+        const res = await fetch(
+          `${API_BASE_URL}api/products/${productIdFromQuery}/related`,
+        );
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const json = await res.json();
+        // Chuẩn hóa cấu trúc BE (Product) về shape JSX cần dùng.
+        const normalized = (json?.data ?? []).map((p) => ({
+          id: p.id,
+          name: p.name,
+          tagline: p.description || "",
+          href: `/product_detail?id=${p.id}`,
+          image:
+            p.images?.[0]?.img_url ||
+            p.images?.[0]?.image_url ||
+            "/src/assets/product.jpg",
+          cta: "Xem ngay",
+        }));
+        setRelatedProducts(normalized);
+      } catch {
+        // Lỗi liên quan KHÔNG làm hỏng trang chính — dùng state riêng.
+        setRelatedError("Không thể tải sản phẩm liên quan.");
+        setRelatedProducts([]);
+      }
+    };
+
+    fetchRelatedProducts();
     fetchProduct();
   }, [productIdFromQuery]);
 
@@ -244,43 +277,43 @@ export default function Product_detail() {
   );
 
   // UI phần liên quan: giữ demo để không phụ thuộc API.
-  const relatedProducts = useMemo(
-    () => [
-      {
-        id: "related-1",
-        name: "iPhone Pro Max 512GB",
-        tagline: "Hiệu năng cao, màn hình sống động, sẵn sàng cho mọi tác vụ.",
-        href: "/product_detail?id=1",
-        cta: "Xem ngay",
-        image: "/src/assets/product.jpg",
-      },
-      {
-        id: "related-2",
-        name: "iPhone Pro 256GB",
-        tagline: "Tối ưu tốc độ, chụp ảnh sắc nét, trải nghiệm mượt mà.",
-        href: "/product_detail?id=1",
-        cta: "Xem ngay",
-        image: "/src/assets/product.jpg",
-      },
-      {
-        id: "related-3",
-        name: "iPhone Plus 128GB",
-        tagline: "Cân bằng gọn nhẹ và hiệu năng ổn định mỗi ngày.",
-        href: "/product_detail?id=1",
-        cta: "Khám phá",
-        image: "/src/assets/product.jpg",
-      },
-      {
-        id: "related-4",
-        name: "iPhone Pro 512GB",
-        tagline: "Dung lượng lớn, lưu trữ thoải mái, hiệu năng bền bỉ.",
-        href: "/product_detail?id=1",
-        cta: "Xem ngay",
-        image: "/src/assets/product.jpg",
-      },
-    ],
-    [],
-  );
+  // const relatedProducts = useMemo(
+  //   () => [
+  //     {
+  //       id: "related-1",
+  //       name: "iPhone Pro Max 512GB",
+  //       tagline: "Hiệu năng cao, màn hình sống động, sẵn sàng cho mọi tác vụ.",
+  //       href: "/product_detail?id=1",
+  //       cta: "Xem ngay",
+  //       image: "/src/assets/product.jpg",
+  //     },
+  //     {
+  //       id: "related-2",
+  //       name: "iPhone Pro 256GB",
+  //       tagline: "Tối ưu tốc độ, chụp ảnh sắc nét, trải nghiệm mượt mà.",
+  //       href: "/product_detail?id=1",
+  //       cta: "Xem ngay",
+  //       image: "/src/assets/product.jpg",
+  //     },
+  //     {
+  //       id: "related-3",
+  //       name: "iPhone Plus 128GB",
+  //       tagline: "Cân bằng gọn nhẹ và hiệu năng ổn định mỗi ngày.",
+  //       href: "/product_detail?id=1",
+  //       cta: "Khám phá",
+  //       image: "/src/assets/product.jpg",
+  //     },
+  //     {
+  //       id: "related-4",
+  //       name: "iPhone Pro 512GB",
+  //       tagline: "Dung lượng lớn, lưu trữ thoải mái, hiệu năng bền bỉ.",
+  //       href: "/product_detail?id=1",
+  //       cta: "Xem ngay",
+  //       image: "/src/assets/product.jpg",
+  //     },
+  //   ],
+  //   [],
+  // );
 
   const { user, isAuthenticated, loading: authLoading, refreshMe } = useAuth();
   const { openLogin } = useAuthModal();
@@ -669,88 +702,94 @@ export default function Product_detail() {
             </div>
           </div>
 
-          <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-            {relatedProducts.map((p) => (
-              <article
-                key={p.id}
-                className={[
-                  "rounded-lg",
-                  "overflow-hidden",
-                  "flex flex-col items-center",
-                  "text-center",
-                  "border",
-                  "border-transparent",
-                  "transition-transform duration-300 ease-out",
-                  "group",
-                  "text-[#1d1d1f]",
-                  "translate-y-0",
-                  "relative",
-                ].join(" ")}
-              >
-                <div className="w-full">
-                  <img
-                    src={p.image}
-                    alt={p.name}
-                    className="w-full h-55 sm:h-65 lg:h-70 object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
-                    style={{
-                      boxShadow: "rgba(0, 0, 0, 0.22) 3px 5px 30px 0",
-                      borderRadius: 18,
-                    }}
-                    loading="lazy"
-                  />
-                </div>
+          {relatedError ? (
+            <p className="mt-10 text-center text-[14px] text-red-600">
+              {relatedError}
+            </p>
+          ) : relatedProducts.length === 0 ? null : (
+            <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+              {relatedProducts.map((p) => (
+                <article
+                  key={p.id}
+                  className={[
+                    "rounded-lg",
+                    "overflow-hidden",
+                    "flex flex-col items-center",
+                    "text-center",
+                    "border",
+                    "border-transparent",
+                    "transition-transform duration-300 ease-out",
+                    "group",
+                    "text-[#1d1d1f]",
+                    "translate-y-0",
+                    "relative",
+                  ].join(" ")}
+                >
+                  <div className="w-full">
+                    <img
+                      src={`../src/assets/${p.image}`}
+                      alt={p.name}
+                      className="w-full h-55 sm:h-65 lg:h-70 object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
+                      style={{
+                        boxShadow: "rgba(0, 0, 0, 0.22) 3px 5px 30px 0",
+                        borderRadius: 18,
+                      }}
+                      loading="lazy"
+                    />
+                  </div>
 
-                <div className="mt-8 transition-transform duration-300 ease-out group-hover:-translate-y-1">
-                  <h3
-                    className="text-[17px] sm:text-[18px] font-semibold leading-[1.24] tracking-[-0.374px]"
-                    style={{
-                      fontFamily:
-                        "SF Pro Text, system-ui, -apple-system, sans-serif",
-                    }}
-                  >
-                    {p.name}
-                  </h3>
-                  <p
-                    title={p.tagline}
-                    className="w-full min-w-0 mt-2 text-[17px] leading-[1.47] tracking-[-0.374px] line-clamp-2 h-12.5 overflow-hidden text-ellipsis"
-                    style={{
-                      fontFamily:
-                        "SF Pro Text, system-ui, -apple-system, sans-serif",
-                      fontWeight: 400,
-                      color: "#1d1d1f",
-                    }}
-                  >
-                    {p.tagline}
-                  </p>
-
-                  <div className="mt-6">
-                    <a
-                      href={p.href}
-                      className="inline-flex items-center justify-center rounded-full bg-[#0066cc] text-white text-[18px] font-light leading-none px-7 py-3.5 hover:bg-[#0071e3] active:scale-95 transition-all no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2"
+                  <div className="mt-8 transition-transform duration-300 ease-out group-hover:-translate-y-1">
+                    <h3
+                      className="text-[17px] sm:text-[18px] font-semibold leading-[1.24] tracking-[-0.374px]"
                       style={{
                         fontFamily:
                           "SF Pro Text, system-ui, -apple-system, sans-serif",
                       }}
-                      aria-label={`Xem ${p.name}`}
                     >
-                      {p.cta}
-                    </a>
-                  </div>
-                </div>
+                      {p.name}
+                    </h3>
+                    <p
+                      title={p.tagline}
+                      className="w-full min-w-0 mt-2 text-[17px] leading-[1.47] tracking-[-0.374px] line-clamp-2 h-12.5 overflow-hidden text-ellipsis"
+                      style={{
+                        fontFamily:
+                          "SF Pro Text, system-ui, -apple-system, sans-serif",
+                        fontWeight: 400,
+                        color: "#1d1d1f",
+                      }}
+                    >
+                      {p.tagline}
+                    </p>
 
-                <div
-                  aria-hidden="true"
-                  className={[
-                    "pointer-events-none absolute inset-0 rounded-lg",
-                    "border border-transparent",
-                    "transition-opacity duration-300 ease-out",
-                    "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100",
-                    "ring-1 ring-[#0071e3]/20 group-hover:ring-[#0071e3]/40 group-focus-within:ring-[#0071e3]/40",
-                  ].join(" ")}
-                />
-              </article>
-            ))}
-          </div>
+                    <div className="mt-6">
+                      <a
+                        href={p.href}
+                        className="inline-flex items-center justify-center rounded-full bg-[#0066cc] text-white text-[18px] font-light leading-none px-7 py-3.5 hover:bg-[#0071e3] active:scale-95 transition-all no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2"
+                        style={{
+                          fontFamily:
+                            "SF Pro Text, system-ui, -apple-system, sans-serif",
+                        }}
+                        aria-label={`Xem ${p.name}`}
+                      >
+                        {p.cta}
+                      </a>
+                    </div>
+                  </div>
+
+                  <div
+                    aria-hidden="true"
+                    className={[
+                      "pointer-events-none absolute inset-0 rounded-lg",
+                      "border border-transparent",
+                      "transition-opacity duration-300 ease-out",
+                      "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100",
+                      "ring-1 ring-[#0071e3]/20 group-hover:ring-[#0071e3]/40 group-focus-within:ring-[#0071e3]/40",
+                    ].join(" ")}
+                  />
+                </article>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

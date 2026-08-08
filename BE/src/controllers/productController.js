@@ -4,6 +4,7 @@ const {
   getAllProductPopular,
   getAllProductNewArrival,
   getProductById,
+  getProductRelated,
 } = require("../services/productService");
 
 const getAllProductsController = async (req, res, next) => {
@@ -70,10 +71,22 @@ const getProductByIdController = async (req, res, next) => {
   }
 };
 
+const getProductRelatedController = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const limit = parseInt(req.query.limit, 10) || 4;
+    const related = await getProductRelated(id, limit);
+    return res.status(200).json({ success: true, data: related });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getAllProducts: getAllProductsController,
   getAllProductFeatures: getAllProductFeaturesController,
   getAllProductPopular: getAllProductPopularController,
   getProductById: getProductByIdController,
   getAllProductNewArrival: getAllProductNewArrivalController,
+  getProductRelated: getProductRelatedController,
 };

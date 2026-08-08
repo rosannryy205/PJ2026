@@ -47,8 +47,13 @@ export default function Login() {
       // 2) refresh user từ /me để cập nhật Header + user_profile
       await refreshMe();
 
-      // 3) điều hướng về Home
-      navigate("/");
+      // 3) điều hướng theo role: admin/staff sang dashboard, customer về Home
+      const role = payload?.data?.user?.role;
+      if (role === "admin" || role === "staff") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       setAlert({
         variant: "error",

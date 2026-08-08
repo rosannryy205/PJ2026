@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthModalProvider } from "./contexts/authModalContext";
-import { AuthProvider } from "./contexts/authContext";
+import { AuthProvider, useAuth } from "./contexts/authContext";
+import Loading from "./components/loading";
 import MainLayout from "./layouts/mainLayout";
 import AdminLayout from "./layouts/adminLayout";
 import Home from "./pages/Home";
@@ -12,6 +13,27 @@ import Check_out from "./pages/CheckOut";
 import User_profile from "./pages/userProfile";
 import OrderSuccess from "./pages/orderSuccess";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+
+/**
+ * RequireAdmin — guard bảo vệ route admin.
+ * - loading: đang check session => hiện Loading fullscreen.
+ * - Chưa đăng nhập hoặc role không phải admin/staff => redirect về trang chủ.
+ * - Ngược lại => render layout admin.
+ */
+function RequireAdmin({ children }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <Loading variant="fullscreen" size="medium" text="Loading..." />;
+  }
+
+  const isStaff = user?.role === "admin" || user?.role === "staff";
+  if (!isStaff) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+}
 
 function App() {
   return (
@@ -30,7 +52,14 @@ function App() {
               <Route path="order-success" element={<OrderSuccess />} />
             </Route>
 
-            <Route path="/admin" element={<AdminLayout />}>
+            <Route
+              path="/admin"
+              element={
+                <RequireAdmin>
+                  <AdminLayout />
+                </RequireAdmin>
+              }
+            >
               <Route
                 index
                 element={<Navigate to="/admin/dashboard" replace />}
