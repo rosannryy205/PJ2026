@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/authContext";
+import { useSidebar } from "../contexts/sidebarContext";
 
 /* ═══════════════════════════════════════════════════════════════
    HẰNG SỐ & DỮ LIỆU
@@ -9,9 +10,8 @@ const SF_TEXT = "SF Pro Text, system-ui, -apple-system, sans-serif";
 
 /**
  * Menu dashboard — phân cấp BẬC 2.
- * - item có `children`      => hiển thị dropdown (desktop) / accordion (mobile)
- * - item không có `children`=> link trực tiếp (VD: Dashboard)
- * Các href trỏ tới route admin sẽ được khai báo sau (chưa tồn tại trong App.jsx).
+ * - item có `children`       => hiển thị accordion trong sidebar
+ * - item không có `children` => link trực tiếp (VD: Dashboard)
  */
 const NAV_ITEMS = [
   {
@@ -115,7 +115,7 @@ function IconBase({ size = 16, strokeWidth = 2, className = "", children }) {
   );
 }
 
-/* Map tên icon -> SVG path (dùng cho menu) */
+/* Map tên icon -> SVG path */
 const ICON_PATHS = {
   grid: (
     <>
@@ -175,6 +175,7 @@ const ICON_PATHS = {
   ),
   chevronDown: <polyline points="6 9 12 15 18 9" />,
   chevronRight: <polyline points="9 18 15 12 9 6" />,
+  chevronLeft: <polyline points="15 18 9 12 15 6" />,
   menu: (
     <>
       <line x1="4" y1="6" x2="20" y2="6" />
@@ -213,6 +214,13 @@ const ICON_PATHS = {
       <path d="M12 5v14" />
     </>
   ),
+  /* Icon toggle sidebar (panel-left style) */
+  panelLeft: (
+    <>
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <path d="M9 3v18" />
+    </>
+  ),
 };
 
 function NavIcon({ name, size = 16, className = "" }) {
@@ -243,129 +251,152 @@ function useClickOutside(onOutside) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SUB-COMPONENT: DESKTOP DROPDOWN (menu cấp 2)
+   SUB-COMPONENT: SIDEBAR ITEM
+   Hỗ trợ 2 dạng: link trực tiếp và accordion có sub-items
    ═══════════════════════════════════════════════════════════════ */
-function DesktopDropdown({ children = [] }) {
-  if (!children.length) return null;
-  return (
-    <div className="absolute left-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out z-50">
-      <div className="w-58 rounded-xl bg-white border border-[#e0e0e0] py-2 shadow-[0_16px_40px_rgba(0,0,0,0.10)]">
-        {children.map((child) => (
-          <Link
-            key={child.href + child.label}
-            to={child.href}
-            className="flex items-center gap-2.5 px-4 py-2.25 text-[14px] font-normal tracking-[-0.224px] leading-[1.29] text-[#333333] hover:text-[#0066cc] hover:bg-[#f5f5f7] transition-colors no-underline"
-            style={{ fontFamily: SF_TEXT }}
-          >
-            <span className="w-1 h-1 rounded-full bg-[#d2d2d7] group-hover:bg-[#0066cc] shrink-0" />
-            {child.label}
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-}
+function SidebarItem({ item, active, activeHref, collapsed, onNavigate, onExpandSidebar }) {
+  /* Tự mở accordion khi route đang active */
+  const [open, setOpen] = useState(() => active && !!item.children);
 
-/* ═══════════════════════════════════════════════════════════════
-   SUB-COMPONENT: MOBILE ACCORDION (menu cấp 2)
-   ═══════════════════════════════════════════════════════════════ */
-function MobileAccordion({ item, active, onNavigate }) {
-  const [open, setOpen] = useState(active);
-  const [prevActive, setPrevActive] = useState(active);
+  /* Class chung cho mỗi item */
+  const itemCls = [
+    "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 cursor-pointer",
+    collapsed ? "justify-center" : "",
+    active
+      ? "bg-[#0066cc]/20 text-[#2997ff] font-semibold"
+      : "text-[#d2d2d7] hover:text-white hover:bg-[#2a2a2c]",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
-  // Điều chỉnh state khi active thay đổi (không dùng effect — tránh cascading render)
-  // Pattern chính thức của React: "adjusting state during render"
-  if (prevActive !== active) {
-    setPrevActive(active);
-    if (active) setOpen(true);
-  }
-
-  // Item không có children => link trực tiếp
+  /* ── Link trực tiếp (không có sub-items) ── */
   if (!item.children) {
     return (
       <Link
         to={item.href}
         onClick={onNavigate}
-        className={`flex items-center gap-3 px-4 py-2.75 text-[15px] font-normal tracking-[-0.224px] rounded-lg no-underline transition-colors ${
-          active
-            ? "bg-[#0066cc]/10 text-[#0066cc] font-semibold"
-            : "text-[#d2d2d7] hover:text-white hover:bg-[#2a2a2c]"
-        }`}
+        title={collapsed ? item.label : undefined}
+        className={`${itemCls} no-underline`}
         style={{ fontFamily: SF_TEXT }}
       >
-        <NavIcon name={item.icon} size={17} className="shrink-0" />
-        {item.label}
+        <NavIcon name={item.icon} size={18} className="shrink-0" />
+        {!collapsed && (
+          <span className="text-[14px] tracking-[-0.12px] leading-none truncate">
+            {item.label}
+          </span>
+        )}
       </Link>
     );
   }
 
+  /* ── Accordion (có sub-items) ── */
+  const handleToggle = () => {
+    if (collapsed) {
+      /* Khi sidebar đã collapse: click icon => mở rộng sidebar trước */
+      onExpandSidebar?.();
+      return;
+    }
+    setOpen((prev) => !prev);
+  };
+
   return (
     <div>
-      {/* Level 1 */}
+      {/* Level 1 — trigger */}
       <button
-        onClick={() => setOpen(!open)}
-        aria-expanded={open}
-        className={`flex w-full items-center justify-between gap-3 px-4 py-2.75 text-[15px] font-normal tracking-[-0.224px] rounded-lg transition-colors bg-transparent border-none outline-none cursor-pointer ${
-          active
-            ? "bg-[#0066cc]/10 text-[#0066cc] font-semibold"
-            : "text-[#d2d2d7] hover:text-white hover:bg-[#2a2a2c]"
+        onClick={handleToggle}
+        aria-expanded={!collapsed && open}
+        title={collapsed ? item.label : undefined}
+        className={`${itemCls} w-full bg-transparent border-none outline-none ${
+          collapsed ? "" : "justify-between"
         }`}
         style={{ fontFamily: SF_TEXT }}
       >
-        <span className="flex items-center gap-3">
-          <NavIcon name={item.icon} size={17} className="shrink-0" />
-          {item.label}
+        <span className="flex items-center gap-3 min-w-0">
+          <NavIcon name={item.icon} size={18} className="shrink-0" />
+          {!collapsed && (
+            <span className="text-[14px] tracking-[-0.12px] leading-none truncate">
+              {item.label}
+            </span>
+          )}
         </span>
-        <IconBase
-          size={14}
-          className={`transition-transform duration-200 shrink-0 ${
-            open ? "rotate-180" : ""
-          }`}
-        >
-          {ICON_PATHS.chevronDown}
-        </IconBase>
+        {!collapsed && (
+          <IconBase
+            size={13}
+            className={`transition-transform duration-200 shrink-0 ${
+              open ? "rotate-180" : ""
+            }`}
+          >
+            {ICON_PATHS.chevronDown}
+          </IconBase>
+        )}
       </button>
 
-      {/* Level 2 */}
-      <div
-        className={`overflow-hidden transition-all duration-300 ease-in-out ${
-          open ? "max-h-100 opacity-100" : "max-h-0 opacity-0"
-        }`}
-      >
-        <div className="ml-8.5 pl-4 border-l border-[#333336] py-1 mb-1 flex flex-col gap-0.5">
-          {item.children.map((child) => (
-            <Link
-              key={child.href + child.label}
-              to={child.href}
-              onClick={onNavigate}
-              className={`px-3 py-2 text-[13px] font-normal tracking-[-0.12px] rounded-lg no-underline transition-colors ${
-                item.activeHref === child.href
-                  ? "text-white bg-[#2a2a2c]"
-                  : "text-[#86868b] hover:text-white hover:bg-[#2a2a2c]"
-              }`}
-              style={{ fontFamily: SF_TEXT }}
-            >
-              {child.label}
-            </Link>
-          ))}
+      {/* Level 2 — accordion content */}
+      {!collapsed && (
+        <div
+          className={`overflow-hidden transition-all duration-300 ease-in-out ${
+            open ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+          }`}
+        >
+          <div className="ml-7 pl-3 border-l border-[#2a2a2c] mt-1 mb-1 flex flex-col gap-0.5">
+            {item.children.map((child) => (
+              <Link
+                key={child.href + child.label}
+                to={child.href}
+                onClick={onNavigate}
+                className={`px-3 py-2 text-[13px] rounded-lg no-underline transition-colors ${
+                  activeHref === child.href
+                    ? "text-white bg-[#2a2a2c]"
+                    : "text-[#86868b] hover:text-white hover:bg-[#2a2a2c]"
+                }`}
+                style={{ fontFamily: SF_TEXT }}
+              >
+                {child.label}
+              </Link>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   LOGO SVG (dùng lại nhiều chỗ)
+   ═══════════════════════════════════════════════════════════════ */
+function LogoIcon({ size = 15 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path
+        d="M13 3L4 14h7l-2 7 9-11h-7l2-7z"
+        fill="white"
+        stroke="white"
+        strokeWidth="1"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
    HEADER ADMIN
+   Render cả Topbar (sticky, full-width) + Sidebar (fixed, trái)
+   ─────────────────────────────────────────────────────────────
+   Desktop (≥ lg / 1024px):
+     • Sidebar hiển thị cố định bên trái, width 240px (expanded) hoặc 64px (collapsed)
+     • Topbar full-width, nút panelLeft để toggle collapse sidebar
+   Tablet (768–1023px) & Mobile (< 768px):
+     • Sidebar ẩn mặc định, mở dạng overlay drawer từ trái sang
+     • Topbar có nút hamburger để mở drawer
    ═══════════════════════════════════════════════════════════════ */
 export default function HeaderAdmin() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { collapsed, setCollapsed, mobileOpen, setMobileOpen } = useSidebar();
 
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
 
   const userMenuRef = useClickOutside(() => setUserMenuOpen(false));
   const notifRef = useClickOutside(() => setNotifOpen(false));
@@ -378,21 +409,10 @@ export default function HeaderAdmin() {
       return { item, active: pathname.startsWith(item.href) };
     }
     const activeChild = item.children.find((c) => pathname.startsWith(c.href));
-    return {
-      item,
-      active: !!activeChild,
-      activeHref: activeChild?.href,
-    };
+    return { item, active: !!activeChild, activeHref: activeChild?.href };
   });
 
-  /* Hiệu ứng khi scroll: thêm hairline nhẹ dưới top bar */
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  /* Khóa body scroll khi drawer mở */
+  /* Khoá scroll body khi mobile drawer mở */
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
     return () => {
@@ -401,7 +421,9 @@ export default function HeaderAdmin() {
   }, [mobileOpen]);
 
   const closeMobile = () => setMobileOpen(false);
+  const expandSidebar = () => setCollapsed(false);
 
+  /* Avatar initials */
   const initials = (user?.name || "A")
     .split(" ")
     .map((s) => s[0])
@@ -409,440 +431,463 @@ export default function HeaderAdmin() {
     .join("")
     .toUpperCase();
 
+  const firstName = (user?.name || "Admin").split(" ")[0];
+
   const handleLogout = async () => {
     await logout();
     navigate("/");
   };
 
-  const firstName = (user?.name || "Admin").split(" ")[0];
+  /* Số thông báo chưa đọc */
+  const unreadCount = NOTIFICATIONS.filter((n) => n.unread).length;
 
   return (
     <>
+      {/* ═══════════════════════════════════════════
+          TOPBAR — fixed, full-width, z-50
+          Hiển thị trên cả sidebar (z-30/z-40)
+      ═══════════════════════════════════════════ */}
       <header
-        id="admin-header"
-        className="sticky top-0 z-50"
-        style={{ fontFamily: SF_TEXT }}
+        id="admin-topbar"
+        className="fixed top-0 left-0 right-0 h-14 z-50 bg-[#1d1d1f]"
+        style={{
+          fontFamily: SF_TEXT,
+          borderBottom: "1px solid #2a2a2c",
+        }}
       >
-        {/* ═══════════════════════════════════════════
-            TOP BAR — dark, admin chrome
-        ═══════════════════════════════════════════ */}
-        <nav
-          className={`bg-[#1d1d1f] h-14 flex items-center transition-shadow duration-200 ${
-            scrolled ? "shadow-[0_1px_0_rgba(255,255,255,0.08)]" : ""
-          }`}
-        >
-          <div className="w-full max-w-360 mx-auto px-4 sm:px-6 lg:px-10 flex items-center justify-between gap-3">
-            {/* ── Left: hamburger + logo ── */}
-            <div className="flex items-center gap-2 min-w-0">
-              {/* Hamburger — mobile / tablet */}
+        <div className="flex items-center h-full px-3 sm:px-4 gap-2 sm:gap-3">
+
+          {/* ── Hamburger: mobile / tablet ── */}
+          <button
+            id="admin-mobile-toggle"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label={mobileOpen ? "Đóng menu" : "Mở menu"}
+            className="lg:hidden inline-flex items-center justify-center w-9 h-9 rounded-lg
+              text-[#d2d2d7] hover:text-white hover:bg-[#2a2a2c]
+              transition-colors bg-transparent border-none outline-none cursor-pointer shrink-0"
+          >
+            <IconBase size={18}>
+              {ICON_PATHS[mobileOpen ? "close" : "menu"]}
+            </IconBase>
+          </button>
+
+          {/* ── Panel toggle: desktop — thu gọn / mở rộng sidebar ── */}
+          <button
+            id="admin-sidebar-toggle"
+            onClick={() => setCollapsed(!collapsed)}
+            aria-label={collapsed ? "Mở rộng sidebar" : "Thu gọn sidebar"}
+            title={collapsed ? "Mở rộng sidebar" : "Thu gọn sidebar"}
+            className="hidden lg:inline-flex items-center justify-center w-9 h-9 rounded-lg
+              text-[#d2d2d7] hover:text-white hover:bg-[#2a2a2c]
+              transition-colors bg-transparent border-none outline-none cursor-pointer shrink-0"
+          >
+            <NavIcon name="panelLeft" size={18} />
+          </button>
+
+          {/* ── Logo / brand ── */}
+          <Link
+            to="/admin/dashboard"
+            className="flex items-center gap-2 no-underline shrink-0"
+            aria-label="TechStore Admin — Trang chủ"
+          >
+            <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-[#0066cc]">
+              <LogoIcon size={15} />
+            </span>
+            <span className="hidden sm:flex items-center gap-1.5 leading-none">
+              <span className="text-white text-[13px] font-semibold tracking-[0.3px] uppercase">
+                TechStore
+              </span>
+              <span className="inline-block rounded-full bg-[#0066cc] text-white text-[10px] font-semibold tracking-[0.2px] px-2 py-0.5 leading-none">
+                ADMIN
+              </span>
+            </span>
+          </Link>
+
+          {/* ── Search bar: tablet / desktop ── */}
+          <div className="hidden md:block flex-1 max-w-96 mx-auto">
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#86868b] flex pointer-events-none">
+                <NavIcon name="search" size={15} />
+              </span>
+              <input
+                id="admin-search"
+                type="search"
+                placeholder="Tìm kiếm đơn hàng, khách hàng, sản phẩm..."
+                className="w-full rounded-full bg-[#333336] text-white text-[13px] tracking-[-0.12px]
+                  py-2.5 pl-9 pr-4 border border-transparent
+                  placeholder:text-[#86868b]
+                  focus:bg-[#1d1d1f] focus:border-[#0066cc] focus:outline-none
+                  transition-all"
+                style={{ fontFamily: SF_TEXT }}
+              />
+            </div>
+          </div>
+
+          {/* ── Right: notifications + user ── */}
+          <div className="ml-auto flex items-center gap-1 sm:gap-2">
+
+            {/* Notifications */}
+            <div className="relative" ref={notifRef}>
               <button
-                id="admin-mobile-toggle"
-                onClick={() => setMobileOpen(!mobileOpen)}
-                className="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg text-[#d2d2d7] hover:text-white hover:bg-[#2a2a2c] transition-colors bg-transparent border-none outline-none cursor-pointer shrink-0"
-                aria-label={mobileOpen ? "Đóng menu" : "Mở menu"}
+                id="admin-notif-btn"
+                onClick={() => {
+                  setNotifOpen(!notifOpen);
+                  setUserMenuOpen(false);
+                }}
+                aria-label="Thông báo"
+                aria-expanded={notifOpen}
+                className="relative inline-flex items-center justify-center w-9 h-9 rounded-lg
+                  text-[#d2d2d7] hover:text-white hover:bg-[#2a2a2c]
+                  transition-colors bg-transparent border-none outline-none cursor-pointer"
               >
-                <IconBase size={18}>
-                  {ICON_PATHS[mobileOpen ? "close" : "menu"]}
+                <NavIcon name="bell" size={18} />
+                {/* Badge */}
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-4.5 h-4.5 rounded-full
+                    bg-[#e30000] text-white text-[9px] font-bold
+                    flex items-center justify-center leading-none">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Notification dropdown */}
+              {notifOpen && (
+                <div className="absolute right-0 top-full pt-2 z-50 w-80 max-w-[calc(100vw-16px)]">
+                  <div className="rounded-xl bg-white border border-[#e0e0e0]
+                    shadow-[0_16px_40px_rgba(0,0,0,0.13)] overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-[#f0f0f0]">
+                      <span className="text-[14px] font-semibold tracking-[-0.224px] text-[#1d1d1f]">
+                        Thông báo
+                      </span>
+                      <button className="text-[12px] text-[#0066cc] hover:underline bg-transparent border-none cursor-pointer"
+                        style={{ fontFamily: SF_TEXT }}>
+                        Đánh dấu đã đọc
+                      </button>
+                    </div>
+                    <div className="max-h-80 overflow-y-auto">
+                      {NOTIFICATIONS.map((n) => (
+                        <div
+                          key={n.id}
+                          className={`flex gap-3 px-4 py-3 border-b border-[#f0f0f0] last:border-b-0
+                            cursor-pointer transition-colors hover:bg-[#f5f5f7] ${
+                              n.unread ? "bg-[#e8f4ff]/40" : ""
+                            }`}
+                        >
+                          <span
+                            className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${
+                              n.unread ? "bg-[#0066cc]" : "bg-[#d2d2d7]"
+                            }`}
+                          />
+                          <div className="min-w-0">
+                            <p className="text-[13px] font-semibold tracking-[-0.12px] text-[#1d1d1f] truncate">
+                              {n.title}
+                            </p>
+                            <p className="text-[12px] text-[#7a7a7a] leading-[1.3] mt-0.5 line-clamp-2">
+                              {n.detail}
+                            </p>
+                            <p className="text-[11px] text-[#b0b0b0] mt-1">{n.time}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="px-4 py-3 text-center border-t border-[#f0f0f0]">
+                      <button className="text-[12px] text-[#0066cc] hover:underline bg-transparent border-none cursor-pointer"
+                        style={{ fontFamily: SF_TEXT }}>
+                        Xem tất cả thông báo
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Divider */}
+            <span className="hidden sm:block w-px h-5 bg-[#333336] mx-0.5" />
+
+            {/* User menu */}
+            <div className="relative" ref={userMenuRef}>
+              <button
+                id="admin-user-menu-btn"
+                onClick={() => {
+                  setUserMenuOpen(!userMenuOpen);
+                  setNotifOpen(false);
+                }}
+                aria-expanded={userMenuOpen}
+                aria-label="Menu tài khoản"
+                className="flex items-center gap-2 py-1 pl-1 pr-2 rounded-lg
+                  hover:bg-[#2a2a2c] transition-colors
+                  bg-transparent border-none outline-none cursor-pointer"
+              >
+                <span className="inline-flex items-center justify-center w-7 h-7 rounded-full
+                  bg-[#0066cc] text-white text-[12px] font-semibold leading-none shrink-0">
+                  {initials}
+                </span>
+                <span className="hidden lg:flex flex-col items-start leading-none gap-0.5">
+                  <span className="text-white text-[13px] font-medium tracking-[-0.12px]">
+                    {firstName}
+                  </span>
+                  <span className="text-[#86868b] text-[11px] tracking-[-0.12px]">
+                    Quản trị viên
+                  </span>
+                </span>
+                <IconBase
+                  size={13}
+                  className={`text-[#86868b] transition-transform duration-200 ${
+                    userMenuOpen ? "rotate-180" : ""
+                  }`}
+                >
+                  {ICON_PATHS.chevronDown}
                 </IconBase>
               </button>
 
-              {/* Logo / brand */}
-              <Link
-                to="/admin/dashboard"
-                className="flex items-center gap-2 no-underline shrink-0"
-                aria-label="TechStore Admin"
-              >
-                <span className="inline-flex items-center justify-center w-6.5 h-6.5 rounded-[7px] bg-[#0066cc]">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M13 3L4 14h7l-2 7 9-11h-7l2-7z"
-                      fill="white"
-                      stroke="white"
-                      strokeWidth="1"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </span>
-                <span className="hidden sm:flex items-center gap-2 leading-none">
-                  <span className="text-white text-[13px] font-semibold tracking-[0.3px] uppercase">
-                    TechStore
-                  </span>
-                  <span className="inline-block rounded-full bg-[#0066cc] text-white text-[10px] font-semibold tracking-[0.2px] px-1.75 py-0.75 leading-none">
-                    ADMIN
-                  </span>
-                </span>
-              </Link>
-            </div>
-
-            {/* ── Center: search (desktop) ── */}
-            <div className="hidden md:block flex-1 max-w-95 mx-auto">
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#86868b] flex pointer-events-none">
-                  <NavIcon name="search" size={15} />
-                </span>
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm đơn hàng, khách hàng, sản phẩm..."
-                  className="w-full rounded-full bg-[#333336] text-white text-[13px] font-normal tracking-[-0.12px] leading-none py-2.5 pl-9 pr-4 border border-transparent placeholder:text-[#86868b] focus:bg-[#1d1d1f] focus:border-[#0066cc] focus:outline-none transition-all"
-                  style={{ fontFamily: SF_TEXT }}
-                />
-              </div>
-            </div>
-
-            {/* ── Right: notification + user ── */}
-            <div className="flex items-center gap-1 sm:gap-2">
-              {/* Notifications */}
-              <div className="relative" ref={notifRef}>
-                <button
-                  onClick={() => {
-                    setNotifOpen(!notifOpen);
-                    setUserMenuOpen(false);
-                  }}
-                  className="relative inline-flex items-center justify-center w-10 h-10 rounded-lg text-[#d2d2d7] hover:text-white hover:bg-[#2a2a2c] transition-colors bg-transparent border-none outline-none cursor-pointer"
-                  aria-label="Thông báo"
-                  aria-expanded={notifOpen}
-                >
-                  <NavIcon name="bell" size={18} />
-                  <span className="absolute top-1.75right-[8px] min-w-3.5 h-3.5 px-0.75 rounded-full bg-[#e30000] text-white text-[9px] font-semibold flex items-center justify-center leading-none">
-                    2
-                  </span>
-                </button>
-
-                {/* Notification dropdown */}
-                {notifOpen && (
-                  <div className="absolute right-0 top-full pt-2 z-50 w-[320px] max-w-[calc(100vw-32px)]">
-                    <div className="rounded-xl bg-white border border-[#e0e0e0] shadow-[0_16px_40px_rgba(0,0,0,0.10)] overflow-hidden">
-                      <div className="flex items-center justify-between px-4 py-3 border-b border-[#f0f0f0]">
-                        <span className="text-[14px] font-semibold tracking-[-0.224px] text-[#1d1d1f]">
-                          Thông báo
-                        </span>
-                        <span className="text-[12px] text-[#0066cc] cursor-pointer">
-                          Đánh dấu đã đọc
-                        </span>
-                      </div>
-                      <div className="max-h-80 overflow-y-auto">
-                        {NOTIFICATIONS.map((n) => (
-                          <div
-                            key={n.id}
-                            className={`flex gap-3 px-4 py-3 border-b border-[#f0f0f0] last:border-b-0 cursor-pointer transition-colors hover:bg-[#f5f5f7] ${
-                              n.unread ? "bg-[#e8f4ff]/40" : ""
-                            }`}
-                          >
-                            <span
-                              className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${
-                                n.unread ? "bg-[#0066cc]" : "bg-[#d2d2d7]"
-                              }`}
-                            />
-                            <div className="min-w-0">
-                              <p className="text-[13px] font-semibold tracking-[-0.12px] text-[#1d1d1f] truncate">
-                                {n.title}
-                              </p>
-                              <p className="text-[12px] font-normal tracking-[-0.12px] text-[#7a7a7a] leading-[1.3] mt-0.5 line-clamp-2">
-                                {n.detail}
-                              </p>
-                              <p className="text-[11px] font-normal text-[#b0b0b0] mt-1">
-                                {n.time}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="px-4 py-3 text-center border-t border-[#f0f0f0]">
-                        <span className="text-[12px] text-[#0066cc] cursor-pointer">
-                          Xem tất cả thông báo
-                        </span>
+              {/* User dropdown */}
+              {userMenuOpen && (
+                <div className="absolute right-0 top-full pt-2 z-50 w-60">
+                  <div className="rounded-xl bg-white border border-[#e0e0e0]
+                    shadow-[0_16px_40px_rgba(0,0,0,0.13)] overflow-hidden">
+                    {/* Summary */}
+                    <div className="px-4 py-3.5 border-b border-[#f0f0f0] flex items-center gap-3">
+                      <span className="inline-flex items-center justify-center w-9 h-9 rounded-full
+                        bg-[#0066cc] text-white text-[13px] font-semibold leading-none shrink-0">
+                        {initials}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-[14px] font-semibold tracking-[-0.224px] text-[#1d1d1f] truncate">
+                          {user?.name || "Admin"}
+                        </p>
+                        <p className="text-[12px] text-[#7a7a7a] truncate">
+                          {user?.email || "admin@techstore.vn"}
+                        </p>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Divider */}
-              <span className="hidden sm:block w-px h-6 bg-[#333336] mx-1" />
-
-              {/* User menu */}
-              <div className="relative" ref={userMenuRef}>
-                <button
-                  onClick={() => {
-                    setUserMenuOpen(!userMenuOpen);
-                    setNotifOpen(false);
-                  }}
-                  className="flex items-center gap-2.5 py-1 pl-1 pr-2 rounded-lg hover:bg-[#2a2a2c] transition-colors bg-transparent border-none outline-none cursor-pointer"
-                  aria-expanded={userMenuOpen}
-                  aria-label="Menu tài khoản"
-                >
-                  <span className="inline-flex items-center justify-center w-7.5 h-7.5 rounded-full bg-[#0066cc] text-white text-[12px] font-semibold leading-none shrink-0">
-                    {initials}
-                  </span>
-                  <span className="hidden lg:flex flex-col items-start leading-none">
-                    <span className="text-white text-[13px] font-medium tracking-[-0.12px]">
-                      {firstName}
-                    </span>
-                    <span className="text-[#86868b] text-[11px] tracking-[-0.12px] mt-1">
-                      Quản trị viên
-                    </span>
-                  </span>
-                  <IconBase
-                    size={14}
-                    className={`text-[#86868b] transition-transform duration-200 ${
-                      userMenuOpen ? "rotate-180" : ""
-                    }`}
-                  >
-                    {ICON_PATHS.chevronDown}
-                  </IconBase>
-                </button>
-
-                {/* User dropdown */}
-                {userMenuOpen && (
-                  <div className="absolute right-0 top-full pt-2 z-50 w-60">
-                    <div className="rounded-xl bg-white border border-[#e0e0e0] shadow-[0_16px_40px_rgba(0,0,0,0.10)] overflow-hidden">
-                      {/* User summary */}
-                      <div className="px-4 py-3.5 border-b border-[#f0f0f0] flex items-center gap-3">
-                        <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-[#0066cc] text-white text-[13px] font-semibold leading-none shrink-0">
-                          {initials}
-                        </span>
-                        <div className="min-w-0">
-                          <p className="text-[14px] font-semibold tracking-[-0.224px] text-[#1d1d1f] truncate">
-                            {user?.name || "Admin"}
-                          </p>
-                          <p className="text-[12px] text-[#7a7a7a] truncate">
-                            {user?.email || "admin@techstore.vn"}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="py-1.5">
-                        <Link
-                          to="/"
-                          className="flex items-center gap-3 px-4 py-2.25 text-[14px] font-normal tracking-[-0.224px] text-[#333333] hover:text-[#0066cc] hover:bg-[#f5f5f7] transition-colors no-underline"
-                        >
-                          <NavIcon name="home" size={16} className="shrink-0" />
-                          Về trang chủ
-                        </Link>
-                        <Link
-                          to="/user_profile"
-                          className="flex items-center gap-3 px-4 py-2.25 text-[14px] font-normal tracking-[-0.224px] text-[#333333] hover:text-[#0066cc] hover:bg-[#f5f5f7] transition-colors no-underline"
-                        >
-                          <NavIcon name="user" size={16} className="shrink-0" />
-                          Tài khoản
-                        </Link>
-                      </div>
-
-                      <div className="border-t border-[#f0f0f0] py-1.5">
-                        <button
-                          onClick={handleLogout}
-                          className="flex w-full items-center gap-3 px-4 py-2.25 text-[14px] font-normal tracking-[-0.224px] text-[#e30000] hover:bg-[#fff0f0] transition-colors bg-transparent border-none outline-none cursor-pointer text-left"
-                          style={{ fontFamily: SF_TEXT }}
-                        >
-                          <NavIcon
-                            name="logout"
-                            size={16}
-                            className="shrink-0"
-                          />
-                          Đăng xuất
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </nav>
-
-        {/* ═══════════════════════════════════════════
-            SUB-NAV — frosted parchment, menu bậc 2
-            Chỉ hiển thị desktop (≥ lg / 1024px)
-        ═══════════════════════════════════════════ */}
-        <div
-          id="admin-subnav"
-          className="hidden lg:block h-12.5 border-b border-[#e0e0e0] relative"
-          style={{
-            backgroundColor: "rgba(245, 245, 247, 0.80)",
-            backdropFilter: "saturate(180%) blur(20px)",
-            WebkitBackdropFilter: "saturate(180%) blur(20px)",
-          }}
-        >
-          <div className="w-full max-w-360 mx-auto px-4 sm:px-6 lg:px-10 h-full flex items-center justify-between gap-6">
-            {/* Left: menu chính */}
-            <nav
-              className="flex items-center h-full gap-1"
-              aria-label="Menu quản trị"
-            >
-              {navState.map(({ item, active }) => (
-                <div
-                  key={item.label}
-                  className="relative group h-full flex items-center"
-                >
-                  {item.children ? (
-                    <>
-                      <button
-                        className={`flex items-center gap-1.5 h-full px-3 text-[13px] font-normal tracking-[-0.12px] leading-none transition-colors bg-transparent border-none outline-none cursor-pointer ${
-                          active
-                            ? "text-[#0066cc] font-semibold"
-                            : "text-[#333333] hover:text-[#1d1d1f]"
-                        }`}
-                        aria-haspopup="true"
+                    {/* Actions */}
+                    <div className="py-1.5">
+                      <Link
+                        to="/"
+                        className="flex items-center gap-3 px-4 py-2.5 text-[14px]
+                          text-[#333333] hover:text-[#0066cc] hover:bg-[#f5f5f7]
+                          transition-colors no-underline"
+                        style={{ fontFamily: SF_TEXT }}
                       >
-                        <NavIcon
-                          name={item.icon}
-                          size={15}
-                          className="shrink-0"
-                        />
-                        {item.label}
-                        <IconBase
-                          size={12}
-                          className={`transition-transform duration-200 shrink-0 ${
-                            active ? "rotate-180" : ""
-                          }`}
-                        >
-                          {ICON_PATHS.chevronDown}
-                        </IconBase>
+                        <NavIcon name="home" size={15} className="shrink-0" />
+                        Về trang chủ
+                      </Link>
+                      <Link
+                        to="/user_profile"
+                        className="flex items-center gap-3 px-4 py-2.5 text-[14px]
+                          text-[#333333] hover:text-[#0066cc] hover:bg-[#f5f5f7]
+                          transition-colors no-underline"
+                        style={{ fontFamily: SF_TEXT }}
+                      >
+                        <NavIcon name="user" size={15} className="shrink-0" />
+                        Tài khoản
+                      </Link>
+                    </div>
+                    <div className="border-t border-[#f0f0f0] py-1.5">
+                      <button
+                        onClick={handleLogout}
+                        className="flex w-full items-center gap-3 px-4 py-2.5 text-[14px]
+                          text-[#e30000] hover:bg-[#fff0f0]
+                          transition-colors bg-transparent border-none outline-none cursor-pointer text-left"
+                        style={{ fontFamily: SF_TEXT }}
+                      >
+                        <NavIcon name="logout" size={15} className="shrink-0" />
+                        Đăng xuất
                       </button>
-                      <DesktopDropdown children={item.children} />
-                    </>
-                  ) : (
-                    <Link
-                      to={item.href}
-                      className={`relative flex items-center gap-1.5 h-full px-3 text-[13px] font-normal tracking-[-0.12px] leading-none no-underline transition-colors ${
-                        active
-                          ? "text-[#0066cc] font-semibold"
-                          : "text-[#333333] hover:text-[#1d1d1f]"
-                      }`}
-                    >
-                      <NavIcon
-                        name={item.icon}
-                        size={15}
-                        className="shrink-0"
-                      />
-                      {item.label}
-                      {/* Active underline indicator */}
-                      {active && (
-                        <span className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-[#0066cc]" />
-                      )}
-                    </Link>
-                  )}
+                    </div>
+                  </div>
                 </div>
-              ))}
-            </nav>
-
-            {/* Right: quick action */}
-            <Link
-              to="/admin/products/create"
-              className="inline-flex items-center gap-1.5 shrink-0 rounded-full bg-[#0066cc] text-white text-[13px] font-normal tracking-[-0.12px] leading-none px-4 py-2.25 hover:bg-[#0071e3] active:scale-95 transition-all no-underline"
-            >
-              <NavIcon name="plus" size={13} />
-              Tạo mới
-            </Link>
+              )}
+            </div>
           </div>
         </div>
+      </header>
 
-        {/* ═══════════════════════════════════════════
-            MOBILE DRAWER — menu bậc 2 dạng accordion
-            Hiển thị khi < lg (1024px)
-        ═══════════════════════════════════════════ */}
-        {/* Backdrop */}
-        <div
-          className={`fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300 ${
-            mobileOpen
-              ? "opacity-100 pointer-events-auto"
-              : "opacity-0 pointer-events-none"
-          }`}
-          onClick={closeMobile}
-        />
+      {/* ═══════════════════════════════════════════
+          BACKDROP — mobile / tablet
+          Phủ nền khi drawer mở, click để đóng
+      ═══════════════════════════════════════════ */}
+      <div
+        aria-hidden="true"
+        className={`fixed inset-0 bg-black/50 lg:hidden z-45 transition-opacity duration-300 ${
+          mobileOpen
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
+        }`}
+        onClick={closeMobile}
+      />
 
-        {/* Drawer panel */}
+      {/* ═══════════════════════════════════════════
+          SIDEBAR
+          Desktop  : fixed bên trái, z-30 (dưới topbar z-50)
+          Mobile   : overlay drawer, z-[55] (trên topbar)
+          Width    : 240px (expanded) / 64px (collapsed)
+          Transition: translate-x + width smooth
+      ═══════════════════════════════════════════ */}
+      <aside
+        id="admin-sidebar"
+        aria-label="Menu quản trị"
+        style={{ fontFamily: SF_TEXT, borderRight: "1px solid #2a2a2c" }}
+        className={[
+          "fixed top-0 left-0 h-screen flex flex-col bg-[#1d1d1f]",
+          "transition-all duration-300 ease-out overflow-hidden",
+          /* z-index: mobile drawer nổi trên topbar; desktop dưới topbar */
+          mobileOpen ? "z-55" : "z-30",
+          /* Width */
+          collapsed ? "lg:w-16" : "lg:w-60",
+          "w-60 max-w-[85vw]",
+          /* Translate: ẩn trên mobile, hiện trên desktop */
+          mobileOpen ? "translate-x-0 shadow-[4px_0_32px_rgba(0,0,0,0.5)]" : "-translate-x-full lg:translate-x-0",
+        ].join(" ")}
+      >
+        {/* ── Sidebar Header (h-14 = đồng bộ topbar) ── */}
         <div
-          id="admin-mobile-drawer"
-          className={`fixed top-0 left-0 h-full w-75 max-w-[85vw] bg-[#1d1d1f] z-50 lg:hidden transition-transform duration-300 ease-out overflow-y-auto ${
-            mobileOpen ? "translate-x-0" : "-translate-x-full"
+          className={`flex items-center h-14 px-3 shrink-0 ${
+            collapsed ? "justify-center" : "justify-between"
           }`}
+          style={{ borderBottom: "1px solid #2a2a2c" }}
         >
-          {/* Drawer header */}
-          <div className="flex items-center justify-between px-4 py-4 border-b border-[#333336]">
+          {/* Logo — hiện khi không collapse */}
+          {!collapsed && (
             <Link
               to="/admin/dashboard"
               onClick={closeMobile}
-              className="flex items-center gap-2 no-underline"
+              className="flex items-center gap-2 no-underline flex-1 min-w-0"
             >
-              <span className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-[#0066cc]">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M13 3L4 14h7l-2 7 9-11h-7l2-7z"
-                    fill="white"
-                    stroke="white"
-                    strokeWidth="1"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+              <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-[#0066cc] shrink-0">
+                <LogoIcon size={15} />
               </span>
-              <span className="text-white text-[13px] font-semibold tracking-[0.3px] uppercase">
-                TechStore <span className="text-[#2997ff]">Admin</span>
+              <span className="text-white text-[13px] font-semibold tracking-[0.3px] uppercase truncate">
+                TechStore{" "}
+                <span className="text-[#2997ff]">Admin</span>
               </span>
             </Link>
+          )}
+
+          {/* Chỉ icon khi collapse */}
+          {collapsed && (
+            <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-[#0066cc]">
+              <LogoIcon size={15} />
+            </span>
+          )}
+
+          {/* Mobile: nút đóng drawer */}
+          {!collapsed && (
             <button
               onClick={closeMobile}
-              className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-[#86868b] hover:text-white hover:bg-[#2a2a2c] transition-colors bg-transparent border-none outline-none cursor-pointer"
               aria-label="Đóng menu"
+              className="lg:hidden inline-flex items-center justify-center w-8 h-8 rounded-lg
+                text-[#86868b] hover:text-white hover:bg-[#2a2a2c]
+                transition-colors bg-transparent border-none outline-none cursor-pointer shrink-0 ml-1"
             >
-              <IconBase size={18}>{ICON_PATHS.close}</IconBase>
+              <IconBase size={16}>{ICON_PATHS.close}</IconBase>
             </button>
-          </div>
+          )}
+        </div>
 
-          {/* User summary */}
-          <div className="px-4 py-4 border-b border-[#333336]">
+        {/* ── User info (ẩn khi collapse) ── */}
+        {!collapsed && (
+          <div
+            className="px-4 py-3 shrink-0"
+            style={{ borderBottom: "1px solid #2a2a2c" }}
+          >
             <div className="flex items-center gap-3">
-              <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[#0066cc] text-white text-[14px] font-semibold leading-none shrink-0">
+              <span className="inline-flex items-center justify-center w-8 h-8 rounded-full
+                bg-[#0066cc] text-white text-[12px] font-semibold leading-none shrink-0">
                 {initials}
               </span>
               <div className="min-w-0">
-                <p className="text-white text-[15px] font-semibold tracking-[-0.224px] truncate">
+                <p className="text-white text-[13px] font-semibold tracking-[-0.12px] truncate">
                   {user?.name || "Admin"}
                 </p>
-                <p className="text-[#86868b] text-[12px] truncate">
+                <p className="text-[#86868b] text-[11px] truncate">
                   {user?.email || "admin@techstore.vn"}
                 </p>
               </div>
             </div>
           </div>
+        )}
 
-          {/* Nav accordion (level 2) */}
-          <div className="px-3 py-3 flex flex-col gap-1">
-            {navState.map(({ item, active, activeHref }) => (
-              <MobileAccordion
-                key={item.label}
-                item={{ ...item, activeHref }}
-                active={active}
-                onNavigate={closeMobile}
-              />
-            ))}
+        {/* ── Navigation ── */}
+        <nav
+          aria-label="Menu chính"
+          className="flex-1 overflow-y-auto py-3 px-2 flex flex-col gap-0.5"
+          style={{ scrollbarWidth: "thin", scrollbarColor: "#2a2a2c transparent" }}
+        >
+          {navState.map(({ item, active, activeHref }) => (
+            <SidebarItem
+              key={item.label}
+              item={item}
+              active={active}
+              activeHref={activeHref}
+              collapsed={collapsed}
+              onNavigate={closeMobile}
+              onExpandSidebar={expandSidebar}
+            />
+          ))}
+        </nav>
+
+        {/* ── Footer ── */}
+        <div className="shrink-0" style={{ borderTop: "1px solid #2a2a2c" }}>
+          {/* Desktop: nút collapse (nằm trong sidebar) */}
+          <div className={`hidden lg:flex px-2 pt-2 ${collapsed ? "justify-center" : ""}`}>
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              title={collapsed ? "Mở rộng sidebar" : "Thu gọn sidebar"}
+              className={`flex items-center gap-3 w-full px-3 py-2 rounded-xl
+                text-[#86868b] hover:text-white hover:bg-[#2a2a2c]
+                transition-colors bg-transparent border-none outline-none cursor-pointer
+                ${collapsed ? "justify-center" : ""}`}
+              style={{ fontFamily: SF_TEXT }}
+            >
+              <IconBase size={16}>
+                {ICON_PATHS[collapsed ? "chevronRight" : "chevronLeft"]}
+              </IconBase>
+              {!collapsed && (
+                <span className="text-[13px] tracking-[-0.12px]">Thu gọn</span>
+              )}
+            </button>
           </div>
 
-          {/* Footer actions */}
-          <div className="mt-auto px-4 py-4 border-t border-[#333336] flex flex-col gap-1">
+          {/* Home + Logout */}
+          <div className="px-2 py-2 flex flex-col gap-0.5">
             <Link
               to="/"
               onClick={closeMobile}
-              className="flex items-center gap-3 px-3 py-2.5 text-[14px] text-[#d2d2d7] hover:text-white hover:bg-[#2a2a2c] rounded-lg transition-colors no-underline"
+              title={collapsed ? "Về trang chủ" : undefined}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl
+                text-[#d2d2d7] hover:text-white hover:bg-[#2a2a2c]
+                transition-colors no-underline
+                ${collapsed ? "justify-center" : ""}`}
+              style={{ fontFamily: SF_TEXT }}
             >
-              <NavIcon name="home" size={16} className="shrink-0" />
-              Về trang chủ
+              <NavIcon name="home" size={17} className="shrink-0" />
+              {!collapsed && (
+                <span className="text-[14px] tracking-[-0.12px]">Về trang chủ</span>
+              )}
             </Link>
+
             <button
               onClick={async () => {
                 closeMobile();
                 await handleLogout();
               }}
-              className="flex items-center gap-3 px-3 py-2.5 text-[14px] text-[#e30000] hover:bg-[#fff0f0] hover:text-[#e30000] rounded-lg transition-colors bg-transparent border-none outline-none cursor-pointer text-left"
+              title={collapsed ? "Đăng xuất" : undefined}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl w-full
+                text-[#e30000] hover:bg-[#2a2a2c]/80 hover:text-[#ff453a]
+                transition-colors bg-transparent border-none outline-none cursor-pointer text-left
+                ${collapsed ? "justify-center" : ""}`}
               style={{ fontFamily: SF_TEXT }}
             >
-              <NavIcon name="logout" size={16} className="shrink-0" />
-              Đăng xuất
+              <NavIcon name="logout" size={17} className="shrink-0" />
+              {!collapsed && (
+                <span className="text-[14px] tracking-[-0.12px]">Đăng xuất</span>
+              )}
             </button>
           </div>
         </div>
-      </header>
+      </aside>
     </>
   );
 }
