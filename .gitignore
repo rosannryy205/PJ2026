@@ -1,5 +1,6 @@
 .env
 skills-lock.json
 node_modules/
+*.drawio
 *.md
 !README.md
