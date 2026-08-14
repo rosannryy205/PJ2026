@@ -12,7 +12,7 @@ import Cart from "./pages/Cart";
 import Check_out from "./pages/CheckOut";
 import User_profile from "./pages/userProfile";
 import OrderSuccess from "./pages/orderSuccess";
-import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminDashboard from "./pages/admin/adminDashboard";
 
 /**
  * RequireAdmin — guard bảo vệ route admin.
